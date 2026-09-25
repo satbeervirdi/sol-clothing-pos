@@ -59,8 +59,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 function registerPWA() {
+  if ('caches' in window) {
+    caches.keys().then((keys) => {
+      keys.forEach((k) => {
+        if (k !== 'sol-pos-cache-v3') caches.delete(k);
+      });
+    });
+  }
   if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('/static/sw.js').catch(err => {
+    navigator.serviceWorker.register('/static/sw.js').then((reg) => {
+      reg.update();
+    }).catch(err => {
       console.log('SW registration note:', err);
     });
   }
