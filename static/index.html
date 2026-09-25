@@ -77,8 +77,8 @@
 <body class="bg-black text-white min-h-screen flex flex-col antialiased select-none font-sans">
 
   <!-- Top App Navigation Bar -->
-  <header class="bg-black/95 backdrop-blur-md border-b border-zinc-850 sticky top-0 z-40 px-3 sm:px-6 py-2.5">
-    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+  <header class="bg-black/95 backdrop-blur-md border-b border-zinc-850 sticky top-0 z-40 px-3.5 sm:px-6 py-2.5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-3">
       
       <!-- Brand Logo Vector -->
       <div class="flex items-center gap-2 sm:gap-3 shrink-0">
@@ -87,8 +87,18 @@
         </a>
       </div>
 
-      <!-- Navigation Tabs (Monochrome Minimalist) -->
-      <nav class="flex items-center gap-1 bg-zinc-950 p-1 rounded-xl border border-zinc-850 overflow-x-auto no-scrollbar flex-nowrap shrink">
+      <!-- Mobile Top Actions (Visible only on mobile < md:) -->
+      <div class="flex md:hidden items-center gap-2">
+        <span id="mobile-header-tab-title" class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300">
+          Billing
+        </span>
+        <button onclick="openMobileMoreSheet()" class="w-9 h-9 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white flex items-center justify-center transition active:scale-95" title="More Modules">
+          <i class="fa-solid fa-ellipsis text-sm"></i>
+        </button>
+      </div>
+
+      <!-- Desktop Navigation Tabs (Hidden on mobile < md:, visible md:flex) -->
+      <nav class="hidden md:flex items-center gap-1 bg-zinc-950 p-1 rounded-xl border border-zinc-850 overflow-x-auto no-scrollbar flex-nowrap shrink">
         <button onclick="switchTab('billing')" id="tab-btn-billing" class="tab-btn active px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all bg-white text-black whitespace-nowrap">
           <i class="fa-solid fa-cash-register text-xs"></i>
           <span>Billing</span>
@@ -111,7 +121,7 @@
           <i class="fa-solid fa-qrcode text-xs"></i>
           <span>Tags</span>
         </button>
-        <button onclick="switchTab('integrations')" id="tab-btn-integrations" class="hidden md:flex tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold items-center gap-1.5 transition-all text-zinc-400 hover:text-white hover:bg-zinc-900 whitespace-nowrap" title="Google Sheets, Gmail, WhatsApp">
+        <button onclick="switchTab('integrations')" id="tab-btn-integrations" class="tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold items-center gap-1.5 transition-all text-zinc-400 hover:text-white hover:bg-zinc-900 whitespace-nowrap" title="Google Sheets, Gmail, WhatsApp">
           <i class="fa-solid fa-link text-xs"></i>
           <span>Sync</span>
         </button>
@@ -120,8 +130,8 @@
         </button>
       </nav>
 
-      <!-- Quick Action Utilities -->
-      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+      <!-- Desktop Quick Action Utilities (Hidden on mobile < md:, visible md:flex) -->
+      <div class="hidden md:flex items-center gap-1.5 sm:gap-2 shrink-0">
         <!-- Live Sold Products Modal Trigger -->
         <button onclick="openSoldProductsModal()" title="View sold items and sales reports" class="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-xl border border-zinc-800 hover:border-emerald-500/50 bg-pitch text-white text-xs font-bold transition shadow-sm">
           <i class="fa-solid fa-boxes-stacked text-emerald-400 text-xs"></i>
@@ -140,7 +150,7 @@
   </header>
 
   <!-- Main Workspace Area -->
-  <main class="flex-1 max-w-7xl w-full mx-auto p-2.5 sm:p-5 flex flex-col pb-20 lg:pb-6">
+  <main class="flex-1 max-w-7xl w-full mx-auto p-2.5 sm:p-5 flex flex-col pb-36 lg:pb-6">
 
     <!-- ============================================================== -->
     <!-- 1. POS BILLING TAB (Default Cashier Terminal)                  -->
@@ -385,10 +395,79 @@
 
         </div>
 
+        <!-- Mobile Compact Bill Summary (Visible on mobile only < lg:) -->
+        <div id="mobile-bill-summary-card" class="lg:hidden bg-card rounded-2xl p-3.5 border border-zinc-850 shadow-md flex flex-col gap-2.5">
+          <div class="flex items-center justify-between text-xs text-zinc-400 pb-1.5 border-b border-zinc-850">
+            <span class="font-bold uppercase tracking-wider text-[10px] text-zinc-400">
+              <i class="fa-solid fa-receipt mr-1 text-zinc-400"></i> Bill Summary
+            </span>
+            <button type="button" onclick="toggleMobileFullBillDetails()" id="btn-toggle-mobile-bill-details" class="text-[11px] text-zinc-400 hover:text-white flex items-center gap-1 font-semibold">
+              <span id="mobile-bill-details-label">Discounts & Tax</span>
+              <i id="mobile-bill-details-icon" class="fa-solid fa-chevron-down text-[10px]"></i>
+            </button>
+          </div>
+
+          <!-- Quick Totals Row -->
+          <div class="space-y-1.5 text-xs font-mono">
+            <div class="flex justify-between text-zinc-400">
+              <span>Subtotal</span>
+              <span class="text-white"><span class="currency-symbol">₹</span><span id="mobile-summary-subtotal">0.00</span></span>
+            </div>
+            <div id="mobile-summary-discount-row" class="hidden flex justify-between text-red-400">
+              <span>Discount</span>
+              <span>-<span class="currency-symbol">₹</span><span id="mobile-summary-discount">0.00</span></span>
+            </div>
+            <div class="flex justify-between text-zinc-400">
+              <span>GST / Tax</span>
+              <span class="text-white">+<span class="currency-symbol">₹</span><span id="mobile-summary-tax">0.00</span></span>
+            </div>
+            <div class="flex justify-between text-sm font-extrabold text-white pt-2 border-t border-zinc-850">
+              <span class="font-sans uppercase text-xs tracking-wider">Total</span>
+              <span class="text-emerald-400 text-base"><span class="currency-symbol">₹</span><span id="mobile-summary-total">0.00</span></span>
+            </div>
+          </div>
+
+          <!-- Expandable Details Section (Discounts, Tax selection, Notes) -->
+          <div id="mobile-bill-details-section" class="hidden pt-3 border-t border-zinc-850 space-y-3 text-xs">
+            <!-- Mobile Discount presets -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <span class="text-[10px] uppercase font-bold text-zinc-400">Order Discount</span>
+                <div class="flex items-center gap-1">
+                  <input type="number" id="mobile-discount-input" min="0" placeholder="0" class="w-16 bg-black border border-zinc-800 rounded px-1.5 py-0.5 text-right font-mono text-xs text-red-400 focus:outline-none" oninput="syncMobileDiscount(this.value)">
+                </div>
+              </div>
+              <div class="flex items-center gap-1 text-[10px]">
+                <button type="button" onclick="applyQuickDiscount(0)" class="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-zinc-400">None</button>
+                <button type="button" onclick="applyQuickDiscount(5, true)" class="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-white font-bold">5%</button>
+                <button type="button" onclick="applyQuickDiscount(10, true)" class="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-white font-bold">10%</button>
+                <button type="button" onclick="applyQuickDiscount(15, true)" class="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-white font-bold">15%</button>
+                <button type="button" onclick="applyQuickDiscount(100, false)" class="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-red-400 font-mono">-₹100</button>
+              </div>
+            </div>
+
+            <!-- Mobile Tax selection -->
+            <div class="flex items-center justify-between">
+              <span class="text-[10px] uppercase font-bold text-zinc-400">Tax / GST Rate</span>
+              <select id="mobile-tax-select" class="bg-black border border-zinc-800 rounded px-2 py-1 text-xs text-white" onchange="syncMobileTax(this.value)">
+                <option value="0">0% (None)</option>
+                <option value="5" selected>5% (Apparel standard)</option>
+                <option value="12">12% (Suits / Luxury)</option>
+                <option value="18">18%</option>
+              </select>
+            </div>
+
+            <!-- Notes -->
+            <div>
+              <input type="text" id="mobile-bill-notes-input" placeholder="Invoice notes / tailoring details..." class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none" oninput="syncMobileNotes(this.value)">
+            </div>
+          </div>
+        </div>
+
       </div>
 
-      <!-- Right Column: Bill Totals, Payment & Checkout (4 cols) -->
-      <div class="lg:col-span-4 flex flex-col gap-3">
+      <!-- Right Column: Bill Totals, Payment & Checkout (4 cols on Desktop; Hidden on Mobile) -->
+      <div class="hidden lg:flex lg:col-span-4 flex-col gap-3">
         
         <div class="bg-card rounded-2xl p-4 border border-zinc-850 shadow-md flex flex-col justify-between h-full">
           
@@ -527,19 +606,47 @@
 
     </section>
 
-    <!-- Mobile Sticky Checkout Bar (Visible on mobile only when on billing tab) -->
-    <div id="mobile-sticky-checkout" class="lg:hidden fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-lg border-t border-zinc-800 px-4 py-2.5 z-30 flex items-center justify-between gap-3 shadow-2xl">
+    <!-- Mobile Sticky Checkout Bar (Sits cleanly ABOVE Mobile Bottom Nav with NO overlap) -->
+    <div id="mobile-sticky-checkout" class="lg:hidden fixed bottom-[calc(54px+env(safe-area-inset-bottom,0px))] left-0 right-0 bg-zinc-950/95 backdrop-blur-xl border-t border-zinc-850 px-4 py-2.5 z-30 flex items-center justify-between gap-3 shadow-2xl transition-all">
       <div class="flex flex-col">
-        <span class="text-[9px] uppercase font-bold text-zinc-400">Total Due</span>
+        <span class="text-[9px] uppercase font-bold text-zinc-400 tracking-wider">Total Due</span>
         <span class="text-lg font-extrabold text-emerald-400 font-mono">
           <span class="currency-symbol">₹</span><span id="mobile-bottom-total">0.00</span>
         </span>
       </div>
-      <button onclick="completeSaleAndGenerateBill()" id="mobile-checkout-btn" class="flex-1 max-w-[210px] py-2.5 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg active:scale-95 transition">
+      <button onclick="handleMobileCheckoutClick()" id="mobile-checkout-btn" class="flex-1 max-w-[210px] h-10 py-2 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg active:scale-95 transition">
         <i class="fa-solid fa-bolt-lightning text-xs"></i>
         <span>Complete Sale</span>
       </button>
     </div>
+
+    <!-- Fixed Mobile Bottom Navigation Bar (4 Primary Destinations: Billing, Stock, CRM, More) -->
+    <nav id="mobile-bottom-nav" class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-black/95 backdrop-blur-xl border-t border-zinc-850 px-2 py-1 flex items-center justify-around shadow-2xl">
+      <!-- 1. Billing -->
+      <button onclick="switchTab('billing')" id="mobile-nav-billing" class="mobile-bottom-nav-btn active flex-1 py-1 flex flex-col items-center justify-center gap-1 text-white transition active:scale-95">
+        <i class="fa-solid fa-cash-register text-sm"></i>
+        <span class="text-[10px] font-bold">Billing</span>
+      </button>
+      
+      <!-- 2. Stock -->
+      <button onclick="switchTab('inventory')" id="mobile-nav-inventory" class="mobile-bottom-nav-btn flex-1 py-1 flex flex-col items-center justify-center gap-1 text-zinc-500 hover:text-white transition active:scale-95 relative">
+        <i class="fa-solid fa-boxes-stacked text-sm"></i>
+        <span class="text-[10px] font-bold">Stock</span>
+        <span id="mobile-low-stock-badge" class="hidden absolute top-0.5 right-6 text-[8px] bg-red-600 text-white px-1 rounded-full font-bold">0</span>
+      </button>
+      
+      <!-- 3. CRM -->
+      <button onclick="switchTab('crm')" id="mobile-nav-crm" class="mobile-bottom-nav-btn flex-1 py-1 flex flex-col items-center justify-center gap-1 text-zinc-500 hover:text-white transition active:scale-95">
+        <i class="fa-solid fa-users text-sm"></i>
+        <span class="text-[10px] font-bold">CRM</span>
+      </button>
+      
+      <!-- 4. More -->
+      <button onclick="openMobileMoreSheet()" id="mobile-nav-more" class="mobile-bottom-nav-btn flex-1 py-1 flex flex-col items-center justify-center gap-1 text-zinc-500 hover:text-white transition active:scale-95">
+        <i class="fa-solid fa-ellipsis text-sm"></i>
+        <span class="text-[10px] font-bold">More</span>
+      </button>
+    </nav>
 
     <!-- ============================================================== -->
     <!-- 2. STOCK & INVENTORY TAB                                       -->
@@ -2092,6 +2199,201 @@
           Confirm Restock
         </button>
       </div>
+    </div>
+  </div>
+
+  <!-- 9. MOBILE MORE MENU BOTTOM SHEET -->
+  <div id="modal-mobile-more" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden flex items-end justify-center" onclick="handleMobileMoreBackdropClick(event)">
+    <div class="bg-zinc-950 border-t border-zinc-800 rounded-t-3xl max-w-lg w-full p-5 shadow-2xl relative animate-bottom-sheet flex flex-col pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+      
+      <!-- Drag handle & Header -->
+      <div class="flex items-center justify-between pb-3.5 border-b border-zinc-850">
+        <div class="flex items-center gap-2">
+          <div class="w-1.5 h-4 bg-white rounded-full"></div>
+          <h3 class="text-xs font-extrabold uppercase tracking-wider text-white">More Modules</h3>
+        </div>
+        <button onclick="closeMobileMoreSheet()" class="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center text-xs transition active:scale-90">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- 2-Column Grid -->
+      <div class="grid grid-cols-2 gap-2.5 my-4">
+        <!-- Best Sellers -->
+        <button onclick="switchTab('analytics'); closeMobileMoreSheet();" class="p-3.5 rounded-2xl bg-pitch border border-zinc-850 hover:border-zinc-700 flex items-center gap-3 text-left transition active:scale-95">
+          <div class="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center text-white text-sm shrink-0">
+            <i class="fa-solid fa-chart-simple"></i>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-white block">Best Sellers</span>
+            <span class="text-[10px] text-zinc-500">Sales & trends</span>
+          </div>
+        </button>
+
+        <!-- Tags Studio -->
+        <button onclick="switchTab('tags'); closeMobileMoreSheet();" class="p-3.5 rounded-2xl bg-pitch border border-zinc-850 hover:border-zinc-700 flex items-center gap-3 text-left transition active:scale-95">
+          <div class="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center text-white text-sm shrink-0">
+            <i class="fa-solid fa-qrcode"></i>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-white block">Tags Studio</span>
+            <span class="text-[10px] text-zinc-500">Print QR & tags</span>
+          </div>
+        </button>
+
+        <!-- Sold Products & Reports -->
+        <button onclick="openSoldProductsModal(); closeMobileMoreSheet();" class="p-3.5 rounded-2xl bg-pitch border border-zinc-850 hover:border-zinc-700 flex items-center gap-3 text-left transition active:scale-95">
+          <div class="w-10 h-10 rounded-xl bg-emerald-950/60 border border-emerald-800 text-emerald-400 flex items-center justify-center text-sm shrink-0">
+            <i class="fa-solid fa-boxes-stacked"></i>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-white block">Sold Today</span>
+              <span id="more-sold-badge" class="text-[9px] bg-emerald-950 text-emerald-300 px-1.5 py-0.2 rounded-full border border-emerald-800 font-mono">0</span>
+            </div>
+            <span class="text-[10px] text-zinc-500">Daily reports</span>
+          </div>
+        </button>
+
+        <!-- Sync & Sheets -->
+        <button onclick="switchTab('integrations'); closeMobileMoreSheet();" class="p-3.5 rounded-2xl bg-pitch border border-zinc-850 hover:border-zinc-700 flex items-center gap-3 text-left transition active:scale-95">
+          <div class="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center text-white text-sm shrink-0">
+            <i class="fa-solid fa-link"></i>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-white block">Sync & Sheets</span>
+            <span class="text-[10px] text-zinc-500">Backup & cloud</span>
+          </div>
+        </button>
+
+        <!-- Settings -->
+        <button onclick="switchTab('settings'); closeMobileMoreSheet();" class="p-3.5 rounded-2xl bg-pitch border border-zinc-850 hover:border-zinc-700 flex items-center gap-3 text-left transition active:scale-95">
+          <div class="w-10 h-10 rounded-xl bg-zinc-900 flex items-center justify-center text-white text-sm shrink-0">
+            <i class="fa-solid fa-sliders"></i>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-white block">Settings</span>
+            <span class="text-[10px] text-zinc-500">Store & tax config</span>
+          </div>
+        </button>
+
+        <!-- Live Camera Scanner -->
+        <button onclick="openLiveScannerModal(); closeMobileMoreSheet();" class="p-3.5 rounded-2xl bg-pitch border border-zinc-850 hover:border-zinc-700 flex items-center gap-3 text-left transition active:scale-95">
+          <div class="w-10 h-10 rounded-xl bg-white text-black flex items-center justify-center text-sm shrink-0">
+            <i class="fa-solid fa-camera"></i>
+          </div>
+          <div>
+            <span class="text-xs font-bold text-white block">Camera Scan</span>
+            <span class="text-[10px] text-zinc-500">Barcode / QR</span>
+          </div>
+        </button>
+      </div>
+
+      <div class="pt-2 text-center">
+        <button onclick="closeMobileMoreSheet()" class="w-full py-3 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold text-xs uppercase tracking-wider transition">
+          × Close Menu
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 10. DEDICATED MOBILE PAYMENT BOTTOM SHEET MODAL -->
+  <div id="modal-mobile-payment" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-end justify-center" onclick="handleMobilePaymentBackdropClick(event)">
+    <div class="bg-card border-t border-zinc-800 rounded-t-3xl max-w-lg w-full p-5 shadow-2xl relative animate-bottom-sheet flex flex-col max-h-[92vh] overflow-y-auto pb-[max(1.5rem,env(safe-area-inset-bottom))]">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-zinc-850">
+        <div>
+          <span class="text-[10px] uppercase font-bold text-zinc-400 tracking-wider">Payment & Checkout</span>
+          <h3 class="text-sm font-extrabold text-white">Select Payment Mode</h3>
+        </div>
+        <button onclick="closeMobilePaymentSheet()" class="w-8 h-8 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white flex items-center justify-center text-xs transition active:scale-90">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Grand Total Display -->
+      <div class="my-3.5 p-3.5 rounded-2xl bg-pitch border border-zinc-850 flex items-center justify-between">
+        <div>
+          <span class="text-[10px] uppercase font-bold text-zinc-400 block tracking-wider">Total Due</span>
+          <span class="text-2xl font-extrabold text-emerald-400 font-mono">
+            <span class="currency-symbol">₹</span><span id="mobile-payment-total">0.00</span>
+          </span>
+        </div>
+        <div class="text-right text-[11px] text-zinc-400 font-mono space-y-0.5">
+          <div>Subtotal: <span class="text-white"><span class="currency-symbol">₹</span><span id="mobile-payment-subtotal">0.00</span></span></div>
+          <div id="mobile-payment-discount-row" class="hidden text-red-400">Disc: -<span class="currency-symbol">₹</span><span id="mobile-payment-discount">0.00</span></div>
+          <div>Tax: +<span class="currency-symbol">₹</span><span id="mobile-payment-tax">0.00</span></div>
+        </div>
+      </div>
+
+      <!-- Payment Method 4-Way Grid -->
+      <div class="mb-3.5">
+        <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">Payment Method</label>
+        <div class="grid grid-cols-4 gap-1.5">
+          <button type="button" onclick="setMobilePaymentMethod('Cash')" id="mobile-pay-Cash" class="mobile-pay-btn active py-2.5 rounded-xl text-xs font-extrabold border border-white bg-white text-black flex flex-col items-center gap-1 transition">
+            <i class="fa-solid fa-money-bill-wave"></i>
+            <span>Cash</span>
+          </button>
+          <button type="button" onclick="setMobilePaymentMethod('UPI')" id="mobile-pay-UPI" class="mobile-pay-btn py-2.5 rounded-xl text-xs font-bold border border-zinc-800 bg-pitch text-zinc-300 flex flex-col items-center gap-1 transition">
+            <i class="fa-solid fa-qrcode"></i>
+            <span>UPI / QR</span>
+          </button>
+          <button type="button" onclick="setMobilePaymentMethod('Card')" id="mobile-pay-Card" class="mobile-pay-btn py-2.5 rounded-xl text-xs font-bold border border-zinc-800 bg-pitch text-zinc-300 flex flex-col items-center gap-1 transition">
+            <i class="fa-solid fa-credit-card"></i>
+            <span>Card</span>
+          </button>
+          <button type="button" onclick="setMobilePaymentMethod('Split')" id="mobile-pay-Split" class="mobile-pay-btn py-2.5 rounded-xl text-xs font-bold border border-zinc-800 bg-pitch text-zinc-300 flex flex-col items-center gap-1 transition">
+            <i class="fa-solid fa-arrows-split-up-and-left"></i>
+            <span>Split</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Cash Calculator Box (Visible when Cash selected) -->
+      <div id="mobile-cash-box" class="bg-pitch p-3 rounded-2xl border border-zinc-850 mb-3 space-y-2">
+        <div class="flex items-center justify-between text-xs">
+          <span class="text-zinc-400 font-semibold">Cash Received</span>
+          <input type="number" id="mobile-cash-input" placeholder="0" class="w-28 bg-black border border-zinc-800 rounded-xl px-2.5 py-1.5 text-right font-mono text-sm text-white focus:outline-none focus:border-white" oninput="calculateMobileCashChange()">
+        </div>
+        <div class="flex items-center gap-1.5 text-[11px]">
+          <button type="button" onclick="setMobileCashPreset('exact')" class="flex-1 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-white font-bold">Exact</button>
+          <button type="button" onclick="addMobileCashPreset(100)" class="flex-1 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 font-mono">+100</button>
+          <button type="button" onclick="addMobileCashPreset(500)" class="flex-1 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 font-mono">+500</button>
+          <button type="button" onclick="addMobileCashPreset(2000)" class="flex-1 py-1.5 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-300 font-mono">+2000</button>
+        </div>
+        <div class="flex items-center justify-between text-xs pt-2 border-t border-zinc-850 font-bold">
+          <span class="text-zinc-400">Change Due</span>
+          <span class="font-mono text-base font-bold text-emerald-400"><span class="currency-symbol">₹</span><span id="mobile-cash-change">0.00</span></span>
+        </div>
+      </div>
+
+      <!-- UPI QR Box (Visible when UPI selected) -->
+      <div id="mobile-upi-box" class="hidden bg-pitch p-3 rounded-2xl border border-zinc-800 mb-3 text-center">
+        <span class="text-[10px] font-bold text-zinc-300 uppercase tracking-wide block mb-1">Customer Scans To Pay</span>
+        <div id="mobile-upi-qrcode" class="flex justify-center my-2 p-2 bg-white rounded-xl w-36 h-36 mx-auto"></div>
+        <p class="text-[11px] text-zinc-400 font-mono mt-1">UPI: <span id="mobile-upi-display-id" class="text-white font-bold">sol@upi</span></p>
+      </div>
+
+      <!-- Customer WhatsApp Receipt Mobile Prompt -->
+      <div class="bg-pitch p-3 rounded-2xl border border-zinc-850 mb-3 text-xs">
+        <div class="flex items-center justify-between mb-1.5">
+          <span class="text-[10px] uppercase font-bold text-zinc-400">
+            <i class="fa-brands fa-whatsapp text-emerald-400 mr-1"></i> Customer Receipt
+          </span>
+          <span id="mobile-cust-status-badge" class="text-[9px] uppercase px-1.5 py-0.2 rounded bg-zinc-850 text-zinc-400 border border-zinc-750">Walk-in</span>
+        </div>
+        <input type="tel" id="mobile-payment-cust-phone" placeholder="Enter customer mobile for WhatsApp bill (optional)..." class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-xs text-white placeholder-zinc-500 font-mono focus:outline-none focus:border-white" oninput="handleMobilePaymentCustPhone(this.value)">
+      </div>
+
+      <!-- Confirm & Complete Button -->
+      <div class="pt-1">
+        <button type="button" onclick="confirmMobilePaymentAndCompleteSale()" id="mobile-confirm-pay-btn" class="w-full h-12 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-xl active:scale-98 transition">
+          <i class="fa-solid fa-bolt-lightning text-xs"></i>
+          <span>Confirm Payment & Complete Sale</span>
+        </button>
+      </div>
+
     </div>
   </div>
 

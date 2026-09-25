@@ -121,6 +121,41 @@ function switchTab(tabId) {
     activeBtn.classList.remove('text-zinc-400');
   }
 
+  // Update mobile bottom nav active state (4 destinations: billing, inventory, crm, more)
+  document.querySelectorAll('.mobile-bottom-nav-btn').forEach(btn => {
+    btn.classList.remove('active', 'text-white');
+    btn.classList.add('text-zinc-500');
+  });
+  const normalizedId = (tabId === 'pos' || tabId === 'billing') ? 'billing' : tabId;
+  const mobileNavBtn = document.getElementById(`mobile-nav-${normalizedId}`);
+  if (mobileNavBtn) {
+    mobileNavBtn.classList.add('active', 'text-white');
+    mobileNavBtn.classList.remove('text-zinc-500');
+  } else {
+    // If opening an auxiliary tab (analytics, tags, integrations, settings), highlight More
+    const moreBtn = document.getElementById('mobile-nav-more');
+    if (moreBtn) {
+      moreBtn.classList.add('active', 'text-white');
+      moreBtn.classList.remove('text-zinc-500');
+    }
+  }
+
+  // Update mobile header current tab label
+  const mobileTabIndicator = document.getElementById('mobile-header-tab-title');
+  if (mobileTabIndicator) {
+    const titles = {
+      'billing': 'Billing',
+      'pos': 'Billing',
+      'inventory': 'Stock',
+      'crm': 'CRM',
+      'analytics': 'Sales',
+      'tags': 'Tags',
+      'integrations': 'Sync',
+      'settings': 'Settings'
+    };
+    mobileTabIndicator.textContent = titles[tabId] || tabId.toUpperCase();
+  }
+
   // Toggle mobile sticky checkout bar: only show on billing/pos tab if cart has items
   const mobileSticky = document.getElementById('mobile-sticky-checkout');
   if (mobileSticky) {
@@ -765,18 +800,18 @@ function renderCart() {
               </div>
             </div>
           </div>
-          <button onclick="removeCartItem(${index})" class="text-zinc-500 hover:text-red-400 p-1 transition" title="Remove">
+          <button onclick="removeCartItem(${index})" class="w-8 h-8 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-red-400 flex items-center justify-center transition active:scale-90" title="Remove item">
             <i class="fa-solid fa-trash-can text-xs"></i>
           </button>
         </div>
 
         <div class="flex items-center justify-between pt-2 border-t border-zinc-850/60">
           <div class="inline-flex items-center rounded-xl bg-zinc-900 border ${isShortage ? 'border-red-600' : 'border-zinc-800'} p-0.5">
-            <button onclick="updateCartItemQty(${index}, -1)" class="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-300 hover:bg-zinc-800 active:scale-95 transition font-bold text-sm">-</button>
+            <button onclick="updateCartItemQty(${index}, -1)" class="w-9 h-9 rounded-lg flex items-center justify-center text-zinc-200 hover:bg-zinc-800 active:scale-90 transition font-bold text-base">-</button>
             <input type="number" min="1" value="${item.quantity}" 
-              class="w-8 bg-transparent text-center font-mono font-bold ${isShortage ? 'text-red-400' : 'text-white'} text-xs focus:outline-none"
+              class="w-10 bg-transparent text-center font-mono font-bold ${isShortage ? 'text-red-400' : 'text-white'} text-sm focus:outline-none"
               onchange="setCartItemQty(${index}, this.value)">
-            <button onclick="updateCartItemQty(${index}, 1)" class="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-300 hover:bg-zinc-800 active:scale-95 transition font-bold text-sm">+</button>
+            <button onclick="updateCartItemQty(${index}, 1)" class="w-9 h-9 rounded-lg flex items-center justify-center text-zinc-200 hover:bg-zinc-800 active:scale-90 transition font-bold text-base">+</button>
           </div>
           <div class="text-right">
             <div class="text-[10px] text-zinc-500 font-mono">${state.settings.currency_symbol || '₹'}${parseFloat(item.unit_price).toFixed(2)} / unit</div>
@@ -956,6 +991,21 @@ function calculateBillTotals() {
 
   const mobileBottomTotal = document.getElementById('mobile-bottom-total');
   if (mobileBottomTotal) mobileBottomTotal.textContent = grandTotal.toFixed(2);
+
+  // Sync Mobile Summary Card
+  const mobSubtotal = document.getElementById('mobile-summary-subtotal');
+  if (mobSubtotal) mobSubtotal.textContent = subtotal.toFixed(2);
+  const mobDisc = document.getElementById('mobile-summary-discount');
+  if (mobDisc) mobDisc.textContent = discountAmount.toFixed(2);
+  const mobDiscRow = document.getElementById('mobile-summary-discount-row');
+  if (mobDiscRow) {
+    if (discountAmount > 0) mobDiscRow.classList.remove('hidden');
+    else mobDiscRow.classList.add('hidden');
+  }
+  const mobTax = document.getElementById('mobile-summary-tax');
+  if (mobTax) mobTax.textContent = taxAmount.toFixed(2);
+  const mobTotal = document.getElementById('mobile-summary-total');
+  if (mobTotal) mobTotal.textContent = grandTotal.toFixed(2);
 
   if (state.paymentMethod === 'UPI' && grandTotal > 0) {
     renderDynamicUPIQR(grandTotal);
@@ -3688,3 +3738,278 @@ async function reprintInvoiceById(saleId) {
     alert('Error loading invoice: ' + e.message);
   }
 }
+
+// ==============================================================
+// 16. DEDICATED MOBILE POS EXPERIENCE (Bottom Nav, More Sheet, Mobile Checkout)
+// ==============================================================
+
+// 1. More Menu Sheet
+function openMobileMoreSheet() {
+  const sheet = document.getElementById('modal-mobile-more');
+  if (sheet) {
+    sheet.classList.remove('hidden');
+    // Sync today's sold count badge in more menu
+    const headerSoldBadge = document.getElementById('header-sold-count-badge');
+    const moreSoldBadge = document.getElementById('more-sold-badge');
+    if (headerSoldBadge && moreSoldBadge) {
+      moreSoldBadge.textContent = headerSoldBadge.textContent || '0';
+    }
+  }
+}
+
+function closeMobileMoreSheet() {
+  const sheet = document.getElementById('modal-mobile-more');
+  if (sheet) sheet.classList.add('hidden');
+}
+
+function handleMobileMoreBackdropClick(event) {
+  if (event.target && event.target.id === 'modal-mobile-more') {
+    closeMobileMoreSheet();
+  }
+}
+
+// 2. Mobile Bill Summary Expand/Collapse
+function toggleMobileFullBillDetails() {
+  const details = document.getElementById('mobile-bill-details-section');
+  const label = document.getElementById('mobile-bill-details-label');
+  const icon = document.getElementById('mobile-bill-details-icon');
+  if (!details) return;
+
+  const isHidden = details.classList.contains('hidden');
+  if (isHidden) {
+    details.classList.remove('hidden');
+    if (label) label.textContent = 'Hide details';
+    if (icon) icon.className = 'fa-solid fa-chevron-up text-[10px]';
+  } else {
+    details.classList.add('hidden');
+    if (label) label.textContent = 'Discounts & Tax';
+    if (icon) icon.className = 'fa-solid fa-chevron-down text-[10px]';
+  }
+}
+
+function syncMobileDiscount(val) {
+  const desktopInput = document.getElementById('order-discount-input');
+  if (desktopInput) {
+    desktopInput.value = val;
+    calculateBillTotals();
+  }
+}
+
+function syncMobileTax(val) {
+  const desktopSelect = document.getElementById('tax-rate-select');
+  if (desktopSelect) {
+    desktopSelect.value = val;
+    calculateBillTotals();
+  }
+}
+
+function syncMobileNotes(val) {
+  const desktopNotes = document.getElementById('bill-notes-input');
+  if (desktopNotes) desktopNotes.value = val;
+}
+
+// 3. Mobile Payment Bottom Sheet
+function handleMobileCheckoutClick() {
+  if (!state.cart || state.cart.length === 0) {
+    alert('Please add at least one garment style to the bill.');
+    return;
+  }
+  const shortageItem = state.cart.find(it => it.current_stock !== undefined && it.quantity > it.current_stock);
+  if (shortageItem) {
+    alert(`Only ${shortageItem.current_stock} units available for '${shortageItem.product_name}'. Reduce quantity to proceed.`);
+    return;
+  }
+  openMobilePaymentSheet();
+}
+
+function openMobilePaymentSheet() {
+  const sheet = document.getElementById('modal-mobile-payment');
+  if (!sheet) return;
+
+  const grandTotal = parseFloat(document.getElementById('bill-grand-total').textContent) || 0;
+  const subtotal = parseFloat(document.getElementById('bill-subtotal').textContent) || 0;
+  const discount = parseFloat(document.getElementById('bill-discount-amount').textContent) || 0;
+  const tax = parseFloat(document.getElementById('bill-tax-amount').textContent) || 0;
+
+  // Set amounts
+  const totalEl = document.getElementById('mobile-payment-total');
+  if (totalEl) totalEl.textContent = grandTotal.toFixed(2);
+  const subtotalEl = document.getElementById('mobile-payment-subtotal');
+  if (subtotalEl) subtotalEl.textContent = subtotal.toFixed(2);
+  const discEl = document.getElementById('mobile-payment-discount');
+  if (discEl) discEl.textContent = discount.toFixed(2);
+  const discRow = document.getElementById('mobile-payment-discount-row');
+  if (discRow) {
+    if (discount > 0) discRow.classList.remove('hidden');
+    else discRow.classList.add('hidden');
+  }
+  const taxEl = document.getElementById('mobile-payment-tax');
+  if (taxEl) taxEl.textContent = tax.toFixed(2);
+
+  // Sync active payment method
+  setMobilePaymentMethod(state.paymentMethod || 'Cash');
+
+  // Customer status display
+  const statusBadge = document.getElementById('mobile-cust-status-badge');
+  const phoneInput = document.getElementById('mobile-payment-cust-phone');
+  if (state.selectedCustomer) {
+    if (statusBadge) {
+      statusBadge.textContent = state.selectedCustomer.name || 'Customer';
+      statusBadge.className = 'text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-800';
+    }
+    if (phoneInput) phoneInput.value = state.selectedCustomer.phone || '';
+  } else {
+    if (statusBadge) {
+      statusBadge.textContent = 'Walk-in';
+      statusBadge.className = 'text-[9px] uppercase px-1.5 py-0.2 rounded bg-zinc-850 text-zinc-400 border border-zinc-750';
+    }
+    if (phoneInput && !phoneInput.value) {
+      const searchVal = document.getElementById('billing-customer-search') ? document.getElementById('billing-customer-search').value.trim() : '';
+      if (searchVal && /^[0-9+\s]+$/.test(searchVal)) {
+        phoneInput.value = searchVal;
+      }
+    }
+  }
+
+  // Pre-fill exact cash
+  const cashInput = document.getElementById('mobile-cash-input');
+  if (cashInput && (!cashInput.value || parseFloat(cashInput.value) === 0)) {
+    cashInput.value = grandTotal > 0 ? Math.ceil(grandTotal) : '';
+  }
+  calculateMobileCashChange();
+
+  sheet.classList.remove('hidden');
+}
+
+function closeMobilePaymentSheet() {
+  const sheet = document.getElementById('modal-mobile-payment');
+  if (sheet) sheet.classList.add('hidden');
+}
+
+function handleMobilePaymentBackdropClick(event) {
+  if (event.target && event.target.id === 'modal-mobile-payment') {
+    closeMobilePaymentSheet();
+  }
+}
+
+function setMobilePaymentMethod(method) {
+  state.paymentMethod = method;
+  setPaymentMethod(method); // keep desktop state in sync
+
+  document.querySelectorAll('.mobile-pay-btn').forEach(btn => {
+    btn.className = 'mobile-pay-btn py-2.5 rounded-xl text-xs font-bold border border-zinc-800 bg-pitch text-zinc-300 flex flex-col items-center gap-1 transition';
+  });
+
+  const activeBtn = document.getElementById(`mobile-pay-${method}`);
+  if (activeBtn) {
+    activeBtn.className = 'mobile-pay-btn active py-2.5 rounded-xl text-xs font-extrabold border border-white bg-white text-black flex flex-col items-center gap-1 transition';
+  }
+
+  const cashBox = document.getElementById('mobile-cash-box');
+  const upiBox = document.getElementById('mobile-upi-box');
+
+  if (method === 'Cash') {
+    if (cashBox) cashBox.classList.remove('hidden');
+    if (upiBox) upiBox.classList.add('hidden');
+    calculateMobileCashChange();
+  } else if (method === 'UPI') {
+    if (cashBox) cashBox.classList.add('hidden');
+    if (upiBox) upiBox.classList.remove('hidden');
+    renderMobileUPIQR();
+  } else {
+    if (cashBox) cashBox.classList.add('hidden');
+    if (upiBox) upiBox.classList.add('hidden');
+  }
+}
+
+function renderMobileUPIQR() {
+  const container = document.getElementById('mobile-upi-qrcode');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const grandTotal = parseFloat(document.getElementById('bill-grand-total').textContent) || 0;
+  const upiId = state.settings.upi_id || 'sol@upi';
+  const storeName = state.settings.store_name || 'SOL';
+  const upiUri = `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent(storeName)}&am=${grandTotal.toFixed(2)}&cu=INR`;
+
+  const displayEl = document.getElementById('mobile-upi-display-id');
+  if (displayEl) displayEl.textContent = upiId;
+
+  if (typeof QRCode !== 'undefined') {
+    new QRCode(container, {
+      text: upiUri,
+      width: 140,
+      height: 140,
+      colorDark: "#000000",
+      colorLight: "#ffffff",
+      correctLevel: QRCode.CorrectLevel.M
+    });
+  }
+}
+
+function calculateMobileCashChange() {
+  const total = parseFloat(document.getElementById('bill-grand-total').textContent) || 0;
+  const inputEl = document.getElementById('mobile-cash-input');
+  const changeEl = document.getElementById('mobile-cash-change');
+  if (!inputEl || !changeEl) return;
+
+  const tendered = parseFloat(inputEl.value) || 0;
+  const change = Math.max(0, tendered - total);
+  changeEl.textContent = change.toFixed(2);
+
+  // Sync to desktop cash tendered input
+  const desktopCash = document.getElementById('cash-tendered-input');
+  if (desktopCash) {
+    desktopCash.value = inputEl.value;
+    calculateChange();
+  }
+}
+
+function setMobileCashPreset(preset) {
+  const total = parseFloat(document.getElementById('bill-grand-total').textContent) || 0;
+  const inputEl = document.getElementById('mobile-cash-input');
+  if (!inputEl) return;
+  if (preset === 'exact') {
+    inputEl.value = total > 0 ? Math.ceil(total) : 0;
+  }
+  calculateMobileCashChange();
+}
+
+function addMobileCashPreset(amt) {
+  const inputEl = document.getElementById('mobile-cash-input');
+  if (!inputEl) return;
+  const current = parseFloat(inputEl.value) || 0;
+  inputEl.value = current + amt;
+  calculateMobileCashChange();
+}
+
+function handleMobilePaymentCustPhone(phoneVal) {
+  const clean = phoneVal.replace(/[^0-9]/g, '');
+  if (clean.length >= 10 && state.customers && state.customers.length > 0) {
+    const match = state.customers.find(c => c.phone && c.phone.replace(/[^0-9]/g, '').endsWith(clean.slice(-10)));
+    if (match) {
+      state.selectedCustomer = match;
+      const statusBadge = document.getElementById('mobile-cust-status-badge');
+      if (statusBadge) {
+        statusBadge.textContent = match.name;
+        statusBadge.className = 'text-[9px] uppercase font-bold px-1.5 py-0.2 rounded bg-emerald-950 text-emerald-300 border border-emerald-800';
+      }
+    }
+  }
+}
+
+async function confirmMobilePaymentAndCompleteSale() {
+  const phoneInput = document.getElementById('mobile-payment-cust-phone');
+  let customerOverride = null;
+
+  if (!state.selectedCustomer && phoneInput && phoneInput.value.trim().length >= 10) {
+    customerOverride = {
+      phone: phoneInput.value.trim(),
+      name: 'Valued Guest'
+    };
+  }
+
+  closeMobilePaymentSheet();
+  await executeCheckoutTransaction(customerOverride);
+}
+

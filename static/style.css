@@ -270,3 +270,60 @@ body {
   display: block;
   color: #000000;
 }
+
+/* ==============================================================
+   MOBILE POS SPECIFIC STYLES & DELIBERATE ARCHITECTURE
+   ============================================================== */
+
+@keyframes bottomSheetSlideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0.9;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.animate-bottom-sheet {
+  animation: bottomSheetSlideUp 0.26s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Fixed Mobile Bottom Navigation */
+#mobile-bottom-nav {
+  height: calc(54px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.mobile-bottom-nav-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #71717a;
+  transition: all 0.15s ease;
+  min-height: 44px;
+}
+
+.mobile-bottom-nav-btn.active {
+  color: #ffffff !important;
+}
+
+.mobile-bottom-nav-btn.active i {
+  color: #ffffff !important;
+  transform: translateY(-1px);
+}
+
+/* Sticky Checkout Bar sits cleanly above bottom navigation with NO overlap */
+#mobile-sticky-checkout {
+  bottom: calc(54px + env(safe-area-inset-bottom, 0px));
+}
+
+/* Touch targets on mobile */
+@media (max-width: 768px) {
+  button, input, select {
+    touch-action: manipulation;
+  }
+}
+
