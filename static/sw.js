@@ -1,9 +1,9 @@
 // Service Worker for SOL POS PWA
-const CACHE_NAME = 'sol-pos-cache-v2';
+const CACHE_NAME = 'sol-pos-cache-v3';
 const ASSETS = [
   '/',
-  '/static/style.css',
-  '/static/app.js',
+  '/static/style.css?v=3',
+  '/static/app.js?v=3',
   '/static/manifest.json',
   '/static/sol_logo.svg',
   '/static/sol_logo.png',
@@ -39,7 +39,10 @@ self.addEventListener('fetch', (e) => {
   if (e.request.url.includes('/api/')) {
     return; // Don't cache dynamic API calls
   }
+  // Always fetch fresh HTML & JS from network when online
   e.respondWith(
-    fetch(e.request).catch(() => caches.match(e.request))
+    fetch(e.request).then((response) => {
+      return response;
+    }).catch(() => caches.match(e.request))
   );
 });
