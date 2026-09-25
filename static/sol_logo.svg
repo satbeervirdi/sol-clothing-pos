@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 680 155" width="100%" height="100%">
+  <g fill="none" stroke="#FFFFFF" stroke-linecap="square" stroke-linejoin="miter" stroke-width="8">
+    <!-- S Top Loop -->
+    <path d="M 168 28 L 74 28 C 54 28 42 38 42 52 C 42 66 54 74 74 74 L 102 74" />
+    <!-- S Center Diagonal Cut Indicator & Bottom Loop -->
+    <path d="M 118 74 L 142 74 C 162 74 174 82 174 96 C 174 110 162 120 142 120 L 42 120" />
+    
+    <!-- O Rounded Squircle -->
+    <rect x="222" y="28" width="170" height="92" rx="26" ry="26" />
+    
+    <!-- L Minimalist Right Angle -->
+    <path d="M 444 28 L 444 120 L 576 120" />
+
+    <!-- Thin Accent Lines around Subtitle -->
+    <line x1="45" y1="136" x2="175" y2="136" stroke-width="1.2" opacity="0.7" />
+    <line x1="505" y1="136" x2="635" y2="136" stroke-width="1.2" opacity="0.7" />
+  </g>
+
+  <!-- Typography: SOUL OF LIFESTYLE -->
+  <text x="340" y="140" text-anchor="middle" fill="#FFFFFF" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="14" font-weight="800" letter-spacing="0.38em">SOUL OF LIFESTYLE</text>
+
+  <!-- Subtitle Tagline -->
+  <text x="340" y="154" text-anchor="middle" fill="#A1A1AA" font-family="'Plus Jakarta Sans', system-ui, -apple-system, sans-serif" font-size="8" font-weight="600" letter-spacing="0.24em">PREMIUM WEAR   |   MODERN ESSENTIALS   |   ELEVATED YOU</text>
+</svg>

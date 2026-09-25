@@ -1,0 +1,2082 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>SOL • Soul of Lifestyle — POS & CRM</title>
+  
+  <!-- PWA Meta Tags -->
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#000000">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="SOL POS">
+  <link rel="apple-touch-icon" href="/static/icon-192.png">
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            black: '#000000',
+            pitch: '#050507',
+            card: '#0d0d10',
+            cardhover: '#141418',
+            surface: {
+              800: '#121214',
+              850: '#0d0d0f',
+              900: '#08080a',
+              950: '#000000'
+            },
+            zinc: {
+              750: '#202024',
+              850: '#18181b',
+              900: '#09090b',
+              950: '#040405'
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- HTML5 QR Code Scanner -->
+  <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <!-- QRCode.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <!-- JsBarcode for 1D Barcode Tags -->
+  <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+  <!-- Canvas Confetti -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+  <!-- Custom Monochrome Luxury Styles -->
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="bg-black text-white min-h-screen flex flex-col antialiased select-none font-sans">
+
+  <!-- Top App Navigation Bar -->
+  <header class="bg-black/95 backdrop-blur-md border-b border-zinc-850 sticky top-0 z-40 px-3 sm:px-6 py-2.5">
+    <div class="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4">
+      
+      <!-- Brand Logo Vector -->
+      <div class="flex items-center gap-2 sm:gap-3 shrink-0">
+        <a href="/" class="flex items-center gap-2">
+          <img src="/static/sol_logo.svg" alt="SOL Soul of Lifestyle" class="h-8 sm:h-10 w-auto object-contain">
+        </a>
+      </div>
+
+      <!-- Navigation Tabs (Monochrome Minimalist) -->
+      <nav class="flex items-center gap-1 bg-zinc-950 p-1 rounded-xl border border-zinc-850 overflow-x-auto no-scrollbar flex-nowrap shrink">
+        <button onclick="switchTab('billing')" id="tab-btn-billing" class="tab-btn active px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all bg-white text-black whitespace-nowrap">
+          <i class="fa-solid fa-cash-register text-xs"></i>
+          <span>Billing</span>
+        </button>
+        <button onclick="switchTab('inventory')" id="tab-btn-inventory" class="tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all text-zinc-400 hover:text-white hover:bg-zinc-900 whitespace-nowrap">
+          <i class="fa-solid fa-boxes-stacked text-xs"></i>
+          <span>Stock</span>
+          <span id="low-stock-badge" class="hidden text-[10px] bg-red-600 text-white px-1.5 py-0.2 rounded-full font-bold">0</span>
+        </button>
+        <button onclick="switchTab('crm')" id="tab-btn-crm" class="tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all text-zinc-400 hover:text-white hover:bg-zinc-900 whitespace-nowrap">
+          <i class="fa-solid fa-users text-xs"></i>
+          <span>CRM</span>
+        </button>
+        <button onclick="switchTab('analytics')" id="tab-btn-analytics" class="tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all text-zinc-400 hover:text-white hover:bg-zinc-900 whitespace-nowrap">
+          <i class="fa-solid fa-chart-simple text-xs"></i>
+          <span class="hidden sm:inline">Best Sellers</span>
+          <span class="sm:hidden">Sales</span>
+        </button>
+        <button onclick="switchTab('tags')" id="tab-btn-tags" class="tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all text-zinc-400 hover:text-white hover:bg-zinc-900 whitespace-nowrap">
+          <i class="fa-solid fa-qrcode text-xs"></i>
+          <span>Tags</span>
+        </button>
+        <button onclick="switchTab('integrations')" id="tab-btn-integrations" class="hidden md:flex tab-btn px-2.5 sm:px-3 py-1.5 rounded-lg text-xs font-semibold items-center gap-1.5 transition-all text-zinc-400 hover:text-white hover:bg-zinc-900 whitespace-nowrap" title="Google Sheets, Gmail, WhatsApp">
+          <i class="fa-solid fa-link text-xs"></i>
+          <span>Sync</span>
+        </button>
+        <button onclick="switchTab('settings')" id="tab-btn-settings" class="tab-btn px-2 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 transition-all text-zinc-400 hover:text-white hover:bg-zinc-900" title="Settings">
+          <i class="fa-solid fa-sliders text-xs"></i>
+        </button>
+      </nav>
+
+      <!-- Quick Action Utilities -->
+      <div class="flex items-center gap-1.5 sm:gap-2 shrink-0">
+        <!-- Live Sold Products Modal Trigger -->
+        <button onclick="openSoldProductsModal()" title="View sold items and sales reports" class="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-1.5 rounded-xl border border-zinc-800 hover:border-emerald-500/50 bg-pitch text-white text-xs font-bold transition shadow-sm">
+          <i class="fa-solid fa-boxes-stacked text-emerald-400 text-xs"></i>
+          <span class="hidden md:inline">Sold</span>
+          <span id="header-sold-count-badge" class="px-1.5 py-0.2 rounded-full bg-emerald-950 text-emerald-300 font-mono text-[10px] border border-emerald-800">0</span>
+        </button>
+
+        <!-- Scanner Button -->
+        <button onclick="openLiveScannerModal()" class="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-extrabold transition shadow-sm">
+          <i class="fa-solid fa-camera"></i>
+          <span class="hidden sm:inline">Scan</span>
+        </button>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- Main Workspace Area -->
+  <main class="flex-1 max-w-7xl w-full mx-auto p-2.5 sm:p-5 flex flex-col pb-20 lg:pb-6">
+
+    <!-- ============================================================== -->
+    <!-- 1. POS BILLING TAB (Default Cashier Terminal)                  -->
+    <!-- ============================================================== -->
+    <section id="tab-billing" class="tab-content flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-5">
+      
+      <!-- Left Column: Products, Scanning, Cart (8 cols) -->
+      <div class="lg:col-span-8 flex flex-col gap-3">
+        
+        <!-- Streamlined Customer CRM Bar -->
+        <div class="bg-card rounded-2xl p-3 border border-zinc-850 shadow-md">
+          <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+            
+            <!-- Customer CRM Quick Select -->
+            <div class="flex-1 relative">
+              <div class="flex items-center gap-2">
+                <div class="relative flex-1">
+                  <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
+                  <input type="text" id="billing-customer-search" placeholder="Customer Mobile (e.g. 98201) or Name..." 
+                    class="w-full bg-pitch border border-zinc-800 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white transition"
+                    autocomplete="off" oninput="handleCustomerSearchInput(this.value)">
+                  <button id="clear-cust-btn" onclick="clearSelectedCustomer()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white text-xs">
+                    <i class="fa-solid fa-xmark"></i>
+                  </button>
+                  <!-- Customer Auto-suggest Dropdown -->
+                  <div id="customer-dropdown" class="hidden absolute left-0 right-0 top-full mt-1.5 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-30 max-h-56 overflow-y-auto"></div>
+                </div>
+                <button onclick="openNewCustomerModal()" title="Add New Customer" class="px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-semibold flex items-center gap-1.5 border border-zinc-800 transition shrink-0">
+                  <i class="fa-solid fa-user-plus text-xs"></i>
+                  <span>New</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Active Customer Details Card / Badge -->
+            <div id="active-customer-card" class="bg-pitch rounded-xl p-2 border border-zinc-850 flex items-center justify-between min-w-[200px] shrink-0">
+              <div class="flex items-center gap-2">
+                <div class="w-6 h-6 rounded-full bg-zinc-900 text-zinc-400 flex items-center justify-center text-xs">
+                  <i class="fa-solid fa-user"></i>
+                </div>
+                <div>
+                  <div class="flex items-center gap-1.5">
+                    <span id="active-cust-name" class="text-xs font-bold text-white truncate max-w-[130px]">Walk-in Guest</span>
+                    <span id="active-cust-tier" class="text-[8px] font-extrabold uppercase px-1 py-0.2 rounded bg-zinc-850 text-zinc-300 border border-zinc-750">GUEST</span>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-[10px] text-zinc-500">
+                    <span id="active-cust-phone" class="truncate max-w-[150px]">No phone attached</span>
+                    <span id="active-cust-orders" class="hidden sm:inline">• 0 orders</span>
+                  </div>
+                </div>
+              </div>
+              <div id="active-cust-discount-pill" class="hidden text-right pl-2">
+                <button onclick="applyVIPTierDiscount()" id="active-cust-discount-btn" class="text-[10px] font-extrabold text-black bg-white hover:bg-zinc-200 px-2 py-0.5 rounded transition">
+                  Apply 10%
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Streamlined Item Scanner & Quick Action Bar -->
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 bg-card p-2 rounded-2xl border border-zinc-850">
+          
+          <!-- Barcode Gun / SKU Input with embedded camera scan trigger -->
+          <div class="flex-1 relative">
+            <i class="fa-solid fa-barcode absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 text-sm"></i>
+            <input type="text" id="barcode-scan-input" placeholder="Scan tag or type SKU (e.g. SHIRT)..." 
+              class="w-full bg-pitch border border-zinc-800 rounded-xl pl-9 pr-20 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white transition font-mono"
+              onkeydown="handleBarcodeKeydown(event)">
+            
+            <!-- Quick embedded Camera button inside input -->
+            <button onclick="openLiveScannerModal()" title="Scan with camera" class="absolute right-1.5 top-1/2 -translate-y-1/2 px-2.5 py-1 rounded-lg bg-white hover:bg-zinc-200 text-black text-[11px] font-extrabold flex items-center gap-1 shadow transition">
+              <i class="fa-solid fa-camera"></i>
+              <span>Scan</span>
+            </button>
+          </div>
+
+          <!-- Quick Action Buttons -->
+          <div class="flex items-center gap-2">
+            <button onclick="openCustomItemModal()" class="flex-1 sm:flex-initial px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 border border-zinc-800 transition" title="Add unlisted items, alterations, or custom pricing">
+              <i class="fa-solid fa-plus-circle text-zinc-400"></i>
+              <span>Custom Item</span>
+            </button>
+            <button onclick="toggleCatalogDrawer()" id="btn-toggle-catalog" class="px-3 py-2 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold flex items-center justify-center gap-1.5 border border-zinc-800 transition" title="Toggle styles grid">
+              <i class="fa-solid fa-grip"></i>
+              <span class="hidden sm:inline">Styles Grid</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Category Filter Chips -->
+        <div id="pos-category-chips" class="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs no-scrollbar">
+          <!-- Dynamically populated categories -->
+        </div>
+
+        <!-- Quick Pick Drawer/Grid -->
+        <div id="quick-catalog-grid" class="hidden bg-card p-3 rounded-2xl border border-zinc-850 max-h-56 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2 transition-all">
+          <!-- Populated dynamically with product cards -->
+        </div>
+
+        <!-- The Cart / Bill Table -->
+        <div class="flex-1 bg-card rounded-2xl border border-zinc-850 shadow-md flex flex-col overflow-hidden">
+          
+          <div class="px-4 py-3 bg-zinc-950 border-b border-zinc-850 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-bold uppercase tracking-wider text-white">
+                <i class="fa-solid fa-receipt mr-1.5 text-zinc-400"></i> Bill Line Items
+              </span>
+              <span id="cart-item-count-badge" class="text-[10px] font-extrabold bg-zinc-850 text-white px-2 py-0.5 rounded-full border border-zinc-750">0 items</span>
+            </div>
+            <div class="flex items-center gap-3 text-xs">
+              <span class="text-[11px] text-zinc-500 italic hidden sm:inline">Click name or price to customize on the fly</span>
+              <button onclick="clearCart()" class="text-zinc-400 hover:text-white font-semibold text-xs flex items-center gap-1 transition">
+                <i class="fa-solid fa-trash-can text-[11px]"></i> Clear
+              </button>
+            </div>
+          </div>
+
+          <!-- Cart Items Container -->
+          <div class="flex-1 overflow-y-auto p-2 relative flex flex-col">
+            
+            <!-- Real-Time Stock Warning Alert Banner -->
+            <div id="cart-stock-alert" class="hidden mb-2 p-2.5 rounded-xl bg-red-950/80 border border-red-800 text-red-200 text-xs font-semibold flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid fa-triangle-exclamation text-red-400"></i>
+                <span id="cart-stock-alert-msg">Stock shortage detected.</span>
+              </div>
+              <span class="text-[10px] uppercase font-bold text-red-400">Adjustment Required</span>
+            </div>
+
+            <!-- Table & Mobile Cards View -->
+            <div id="cart-table-view">
+              <!-- Desktop Table View -->
+              <table class="w-full text-left text-xs hidden sm:table">
+                <thead>
+                  <tr class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider border-b border-zinc-850 pb-2">
+                    <th class="py-2 px-3">Item & Details</th>
+                    <th class="py-2 px-2 text-center w-28">Price (<span class="currency-symbol">₹</span>)</th>
+                    <th class="py-2 px-2 text-center w-28">Qty</th>
+                    <th class="py-2 px-2 text-center w-20">Disc</th>
+                    <th class="py-2 px-3 text-right w-24">Total</th>
+                    <th class="py-2 px-2 text-center w-10"></th>
+                  </tr>
+                </thead>
+                <tbody id="cart-items-body" class="divide-y divide-zinc-850">
+                  <!-- Dynamically rendered cart rows for desktop -->
+                </tbody>
+              </table>
+
+              <!-- Mobile Touch Cards View (Under 640px) -->
+              <div id="cart-items-mobile" class="sm:hidden space-y-2.5">
+                <!-- Dynamically rendered mobile cards -->
+              </div>
+            </div>
+
+            <!-- Empty Cart Placeholder -->
+            <div id="cart-empty-placeholder" class="py-16 flex flex-col items-center justify-center text-center text-zinc-500">
+              <div class="w-14 h-14 rounded-2xl bg-zinc-950 border border-zinc-850 flex items-center justify-center mb-3 text-zinc-600">
+                <i class="fa-solid fa-barcode text-xl"></i>
+              </div>
+              <p class="text-sm font-semibold text-zinc-300">Your billing cart is empty</p>
+              <p class="text-xs text-zinc-500 max-w-sm mt-1">Scan a garment QR / Barcode tag, pick from the styles grid, or click "Custom Name & Price".</p>
+              <div class="mt-4 flex gap-2">
+                <button onclick="openLiveScannerModal()" class="px-3.5 py-1.5 rounded-xl bg-white text-black hover:bg-zinc-200 text-xs font-bold transition">
+                  <i class="fa-solid fa-camera mr-1"></i> Live Scanner
+                </button>
+                <button onclick="openCustomItemModal()" class="px-3.5 py-1.5 rounded-xl bg-zinc-900 border border-zinc-700 text-white hover:bg-zinc-800 text-xs font-bold transition">
+                  <i class="fa-solid fa-plus-circle mr-1"></i> Custom Item
+                </button>
+              </div>
+            </div>
+
+            <!-- Compact Success Screen (Requirement 9) -->
+            <div id="cart-success-view" class="hidden py-8 px-4 flex-1 flex flex-col items-center justify-center text-center animate-fade-in">
+              <div class="w-12 h-12 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-xl mb-2">
+                <i class="fa-solid fa-check"></i>
+              </div>
+              <span class="text-xs font-extrabold uppercase tracking-widest text-emerald-400 flex items-center gap-1.5">
+                <span>✓ SALE COMPLETED</span>
+              </span>
+              <h2 id="success-grand-total" class="text-3xl font-extrabold text-white font-mono my-1.5">₹0.00</h2>
+              
+              <div class="w-full max-w-sm bg-pitch border border-zinc-800 rounded-2xl p-3.5 my-3 text-xs text-left grid grid-cols-2 gap-2.5">
+                <div>
+                  <span class="text-[9px] text-zinc-500 uppercase font-bold tracking-wider block">Invoice</span>
+                  <span id="success-inv-number" class="font-mono font-bold text-white text-xs">SOL-2026-000124</span>
+                </div>
+                <div>
+                  <span class="text-[9px] text-zinc-500 uppercase font-bold tracking-wider block">Payment</span>
+                  <span id="success-payment-method" class="font-bold text-white text-xs">UPI</span>
+                </div>
+                <div>
+                  <span class="text-[9px] text-zinc-500 uppercase font-bold tracking-wider block">Inventory</span>
+                  <span class="font-semibold text-emerald-400 flex items-center gap-1 text-xs">
+                    <i class="fa-solid fa-check-circle text-[10px]"></i> Updated
+                  </span>
+                </div>
+                <div>
+                  <span class="text-[9px] text-zinc-500 uppercase font-bold tracking-wider block">CRM</span>
+                  <span class="font-semibold text-emerald-400 flex items-center gap-1 text-xs">
+                    <i class="fa-solid fa-check-circle text-[10px]"></i> Updated
+                  </span>
+                </div>
+                <div>
+                  <span class="text-[9px] text-zinc-500 uppercase font-bold tracking-wider block">WhatsApp</span>
+                  <span id="success-wa-status" class="font-semibold text-emerald-400 text-xs">✓ Sent</span>
+                </div>
+                <div>
+                  <span class="text-[9px] text-zinc-500 uppercase font-bold tracking-wider block">Email</span>
+                  <span id="success-email-status" class="font-semibold text-zinc-400 text-xs">✓ Sent</span>
+                </div>
+              </div>
+
+              <!-- Action Buttons (Requirement 9) -->
+              <div class="flex flex-wrap items-center justify-center gap-2 mt-2 w-full max-w-sm">
+                <button onclick="resetPosForNewSale()" class="flex-1 py-2.5 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs flex items-center justify-center gap-1.5 transition shadow">
+                  <i class="fa-solid fa-plus"></i>
+                  <span>NEW SALE</span>
+                </button>
+                <button onclick="printLastThermalReceipt()" class="py-2.5 px-3 rounded-xl bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 text-white font-bold text-xs flex items-center gap-1.5 transition">
+                  <i class="fa-solid fa-print"></i>
+                  <span>PRINT</span>
+                </button>
+                <button onclick="openLastBillModal()" class="py-2.5 px-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 font-semibold text-xs flex items-center gap-1.5 transition">
+                  <i class="fa-solid fa-eye"></i>
+                  <span>VIEW BILL</span>
+                </button>
+                <a id="success-wa-btn" href="#" target="_blank" class="py-2.5 px-3 rounded-xl bg-emerald-950 border border-emerald-800 hover:bg-emerald-900 text-emerald-300 font-bold text-xs flex items-center gap-1.5 transition">
+                  <i class="fa-brands fa-whatsapp"></i>
+                  <span>WHATSAPP</span>
+                </a>
+                <button id="success-email-btn" onclick="retryLastEmailDelivery()" class="py-2.5 px-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 font-semibold text-xs flex items-center gap-1.5 transition">
+                  <i class="fa-solid fa-envelope"></i>
+                  <span>EMAIL</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Right Column: Bill Totals, Payment & Checkout (4 cols) -->
+      <div class="lg:col-span-4 flex flex-col gap-3">
+        
+        <div class="bg-card rounded-2xl p-4 border border-zinc-850 shadow-md flex flex-col justify-between h-full">
+          
+          <div>
+            <h3 class="text-xs font-bold uppercase tracking-wider text-zinc-400 mb-3 flex items-center justify-between">
+              <span>Bill Breakdown</span>
+              <span id="bill-invoice-preview" class="font-mono text-[11px] text-zinc-300 font-bold border border-zinc-800 px-2 py-0.5 rounded bg-pitch">INV-NEW</span>
+            </h3>
+
+            <!-- Price Breakdown Calculation -->
+            <div class="space-y-2.5 text-xs bg-pitch p-3 rounded-xl border border-zinc-850 mb-4">
+              
+              <div class="flex justify-between items-center text-zinc-300">
+                <span>Subtotal</span>
+                <span class="font-mono font-bold text-white"><span class="currency-symbol">₹</span><span id="bill-subtotal">0.00</span></span>
+              </div>
+
+              <!-- Order Discount Engine -->
+              <div class="pt-2 border-t border-zinc-850">
+                <div class="flex justify-between items-center text-zinc-300 mb-1.5">
+                  <span class="flex items-center gap-1">
+                    <span>Discount</span>
+                    <div class="inline-flex rounded-md border border-zinc-800 bg-black p-0.5 text-[10px]">
+                      <button onclick="setDiscountType('fixed')" id="disc-type-fixed" class="px-1.5 py-0.2 rounded font-bold bg-white text-black">₹</button>
+                      <button onclick="setDiscountType('percent')" id="disc-type-percent" class="px-1.5 py-0.2 rounded text-zinc-400">%</button>
+                    </div>
+                  </span>
+                  <div class="flex items-center gap-1.5">
+                    <input type="number" id="order-discount-input" min="0" value="0" class="w-16 bg-black border border-zinc-800 rounded px-1.5 py-0.5 text-right font-mono text-xs text-red-400 focus:outline-none focus:border-red-400" oninput="calculateBillTotals()">
+                    <span class="font-mono text-red-400">-<span class="currency-symbol">₹</span><span id="bill-discount-amount">0.00</span></span>
+                  </div>
+                </div>
+                <!-- Quick Discount Preset Buttons -->
+                <div class="flex items-center gap-1 text-[10px] mt-1">
+                  <button onclick="applyQuickDiscount(0)" class="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-400">None</button>
+                  <button onclick="applyQuickDiscount(5, true)" class="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white font-bold">5%</button>
+                  <button onclick="applyQuickDiscount(10, true)" class="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white font-bold">10%</button>
+                  <button onclick="applyQuickDiscount(15, true)" class="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white font-bold">15%</button>
+                  <button onclick="applyQuickDiscount(100, false)" class="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-red-400 font-mono">-₹100</button>
+                </div>
+              </div>
+
+              <!-- GST / Tax Toggle -->
+              <div class="flex justify-between items-center text-zinc-300 pt-2 border-t border-zinc-850">
+                <div class="flex items-center gap-1.5">
+                  <span>Tax / GST</span>
+                  <select id="tax-rate-select" class="bg-black border border-zinc-800 rounded px-1.5 py-0.5 text-[11px] text-white focus:outline-none" onchange="calculateBillTotals()">
+                    <option value="0">0% (None)</option>
+                    <option value="5" selected>5% (Apparel standard)</option>
+                    <option value="12">12% (Suits / Luxury)</option>
+                    <option value="18">18%</option>
+                  </select>
+                </div>
+                <span class="font-mono font-semibold text-zinc-300">+<span class="currency-symbol">₹</span><span id="bill-tax-amount">0.00</span></span>
+              </div>
+
+              <!-- Grand Total with Emerald Highlight -->
+              <div class="flex justify-between items-center text-base pt-3 border-t border-zinc-800">
+                <span class="font-extrabold text-white">Grand Total</span>
+                <span class="font-mono font-extrabold text-2xl text-emerald-400">
+                  <span class="currency-symbol">₹</span><span id="bill-grand-total">0.00</span>
+                </span>
+              </div>
+
+            </div>
+
+            <!-- Payment Method Selector (Monochrome) -->
+            <div class="mb-4">
+              <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5">
+                <i class="fa-solid fa-credit-card text-zinc-300 mr-1"></i> Payment Mode
+              </label>
+              <div class="grid grid-cols-4 gap-1.5">
+                <button onclick="setPaymentMethod('Cash')" id="pay-btn-Cash" class="pay-method-btn active py-2 rounded-xl text-xs font-extrabold border border-white bg-white text-black flex flex-col items-center gap-1 transition">
+                  <i class="fa-solid fa-money-bill-wave"></i>
+                  <span>Cash</span>
+                </button>
+                <button onclick="setPaymentMethod('UPI')" id="pay-btn-UPI" class="pay-method-btn py-2 rounded-xl text-xs font-bold border border-zinc-800 bg-pitch text-zinc-300 hover:text-white hover:border-zinc-600 flex flex-col items-center gap-1 transition">
+                  <i class="fa-solid fa-qrcode"></i>
+                  <span>UPI / QR</span>
+                </button>
+                <button onclick="setPaymentMethod('Card')" id="pay-btn-Card" class="pay-method-btn py-2 rounded-xl text-xs font-bold border border-zinc-800 bg-pitch text-zinc-300 hover:text-white hover:border-zinc-600 flex flex-col items-center gap-1 transition">
+                  <i class="fa-solid fa-credit-card"></i>
+                  <span>Card</span>
+                </button>
+                <button onclick="setPaymentMethod('Split')" id="pay-btn-Split" class="pay-method-btn py-2 rounded-xl text-xs font-bold border border-zinc-800 bg-pitch text-zinc-300 hover:text-white hover:border-zinc-600 flex flex-col items-center gap-1 transition">
+                  <i class="fa-solid fa-arrows-split-up-and-left"></i>
+                  <span>Split</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 1. Cash Calculator -->
+            <div id="cash-calculator-box" class="bg-pitch p-3 rounded-xl border border-zinc-850 mb-3 space-y-2">
+              <div class="flex items-center justify-between text-xs">
+                <span class="text-zinc-400">Cash Received</span>
+                <input type="number" id="cash-tendered-input" placeholder="0" class="w-24 bg-black border border-zinc-800 rounded px-2 py-1 text-right font-mono text-sm text-white focus:outline-none focus:border-white" oninput="calculateChange()">
+              </div>
+              <div class="flex items-center gap-1.5 text-[10px]">
+                <button onclick="setCashTendered('exact')" class="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-white font-bold">Exact</button>
+                <button onclick="addCashTendered(100)" class="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-300 font-mono">+100</button>
+                <button onclick="addCashTendered(500)" class="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-300 font-mono">+500</button>
+                <button onclick="addCashTendered(2000)" class="px-2 py-1 rounded bg-zinc-900 border border-zinc-800 text-zinc-300 font-mono">+2000</button>
+              </div>
+              <div class="flex items-center justify-between text-xs pt-1.5 border-t border-zinc-850 font-bold">
+                <span class="text-zinc-400">Change Due</span>
+                <span class="font-mono text-sm font-bold text-emerald-400"><span class="currency-symbol">₹</span><span id="cash-change-due">0.00</span></span>
+              </div>
+            </div>
+
+            <!-- 2. Dynamic UPI QR Box -->
+            <div id="upi-qr-box" class="hidden bg-pitch p-3 rounded-xl border border-zinc-700 mb-3 text-center">
+              <span class="text-[10px] font-bold text-zinc-300 uppercase tracking-wide block mb-1">Customer Scans To Pay</span>
+              <div id="dynamic-upi-qrcode" class="flex justify-center my-2 p-2 bg-white rounded-lg w-36 h-36 mx-auto"></div>
+              <p class="text-[11px] text-zinc-400 font-mono mt-1">UPI: <span id="upi-display-id" class="text-white font-bold">sol@upi</span></p>
+              <p class="text-[10px] text-zinc-500 mt-0.5">Google Pay • PhonePe • Paytm • BHIM</p>
+            </div>
+
+            <!-- Bill Notes -->
+            <div class="mb-3">
+              <input type="text" id="bill-notes-input" placeholder="Invoice notes / tailoring details (optional)..." class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-white">
+            </div>
+
+          </div>
+
+          <!-- Checkout Primary Button -->
+          <div class="pt-2">
+            <button onclick="completeSaleAndGenerateBill()" id="checkout-btn" class="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-sm shadow-xl flex items-center justify-center gap-2 transition active:scale-[0.99]">
+              <i class="fa-solid fa-bolt-lightning text-xs"></i>
+              <span>COMPLETE SALE & GENERATE BILL</span>
+            </button>
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- Mobile Sticky Checkout Bar (Visible on mobile only when on billing tab) -->
+    <div id="mobile-sticky-checkout" class="lg:hidden fixed bottom-0 left-0 right-0 bg-black/95 backdrop-blur-lg border-t border-zinc-800 px-4 py-2.5 z-30 flex items-center justify-between gap-3 shadow-2xl">
+      <div class="flex flex-col">
+        <span class="text-[9px] uppercase font-bold text-zinc-400">Total Due</span>
+        <span class="text-lg font-extrabold text-emerald-400 font-mono">
+          <span class="currency-symbol">₹</span><span id="mobile-bottom-total">0.00</span>
+        </span>
+      </div>
+      <button onclick="completeSaleAndGenerateBill()" id="mobile-checkout-btn" class="flex-1 max-w-[210px] py-2.5 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-lg active:scale-95 transition">
+        <i class="fa-solid fa-bolt-lightning text-xs"></i>
+        <span>Complete Sale</span>
+      </button>
+    </div>
+
+    <!-- ============================================================== -->
+    <!-- 2. STOCK & INVENTORY TAB                                       -->
+    <!-- ============================================================== -->
+    <section id="tab-inventory" class="tab-content hidden flex-1 flex flex-col gap-4">
+      
+      <!-- Inventory Metrics Bar (Monochrome) -->
+      <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div class="bg-card p-3.5 rounded-2xl border border-zinc-850 shadow">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">Total Styles</span>
+          <span id="inv-stat-products" class="text-xl font-extrabold text-white font-mono">0</span>
+        </div>
+        <div class="bg-card p-3.5 rounded-2xl border border-zinc-850 shadow">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">Stock Units</span>
+          <span id="inv-stat-units" class="text-xl font-extrabold text-white font-mono">0</span>
+        </div>
+        <div class="bg-card p-3.5 rounded-2xl border border-zinc-850 shadow">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">Retail Value</span>
+          <span class="text-xl font-extrabold text-emerald-400 font-mono"><span class="currency-symbol">₹</span><span id="inv-stat-retail">0</span></span>
+        </div>
+        <div class="bg-card p-3.5 rounded-2xl border border-zinc-850 shadow">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block">Cost Value</span>
+          <span class="text-xl font-extrabold text-zinc-400 font-mono"><span class="currency-symbol">₹</span><span id="inv-stat-cost">0</span></span>
+        </div>
+        <div class="bg-card p-3.5 rounded-2xl border border-zinc-850 shadow col-span-2 sm:col-span-1">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-white block">Low Stock Alerts</span>
+          <span id="inv-stat-low" class="text-xl font-extrabold text-red-400 font-mono">0</span>
+        </div>
+      </div>
+
+      <!-- Controls, Search, and CSV Import/Export -->
+      <div class="bg-card p-3.5 rounded-2xl border border-zinc-850 shadow flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div class="flex-1 flex flex-wrap items-center gap-2">
+          <div class="relative min-w-[220px] flex-1">
+            <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
+            <input type="text" id="inventory-search" placeholder="Search by style name, SKU, color, barcode..." 
+              class="w-full bg-pitch border border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-white transition"
+              oninput="loadInventory()">
+          </div>
+          <select id="inventory-cat-filter" class="bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-300 focus:outline-none" onchange="loadInventory()">
+            <option value="All">All Categories</option>
+          </select>
+          <select id="inventory-status-filter" class="bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-xs text-zinc-300 focus:outline-none" onchange="loadInventory()">
+            <option value="all">All Stock Status</option>
+            <option value="low">Low Stock Only</option>
+          </select>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <button onclick="openSmartPhotoIntakeModal()" class="px-3.5 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-extrabold flex items-center gap-1.5 transition shadow">
+            <i class="fa-solid fa-camera"></i>
+            <span>Snap / Upload Garment</span>
+          </button>
+          <button onclick="openProductModal()" class="px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-plus"></i>
+            <span>Manual Style</span>
+          </button>
+          <button onclick="downloadCSV('products')" class="px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-xs font-bold flex items-center gap-1.5 transition" title="Export inventory to Google Sheets / CSV">
+            <i class="fa-solid fa-file-csv"></i>
+            <span class="hidden sm:inline">Export Sheets</span>
+          </button>
+          <button onclick="switchTab('tags')" class="px-3.5 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-white text-xs font-bold flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-qrcode"></i>
+            <span>Print QR Tags</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Inventory Table -->
+      <div class="flex-1 bg-card rounded-2xl border border-zinc-850 shadow overflow-hidden flex flex-col">
+        <div class="overflow-x-auto flex-1">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-zinc-950 border-b border-zinc-850 text-[10px] font-bold uppercase text-zinc-400 tracking-wider">
+              <tr>
+                <th class="py-3 px-3 text-center w-12">Item</th>
+                <th class="py-3 px-3">Style & Title</th>
+                <th class="py-3 px-3">SKU & Barcode</th>
+                <th class="py-3 px-3">Category</th>
+                <th class="py-3 px-3 text-center">Size / Color</th>
+                <th class="py-3 px-3 text-right">Cost</th>
+                <th class="py-3 px-3 text-right">Selling (MRP)</th>
+                <th class="py-3 px-3 text-center">Stock</th>
+                <th class="py-3 px-4 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="inventory-table-body" class="divide-y divide-zinc-850">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 3. CUSTOMER CRM TAB                                            -->
+    <!-- ============================================================== -->
+    <section id="tab-crm" class="tab-content hidden flex-1 flex flex-col gap-4">
+      
+      <div class="bg-card p-4 rounded-2xl border border-zinc-850 shadow flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div class="flex-1 max-w-md relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
+          <input type="text" id="crm-search-input" placeholder="Search customer by name, phone, city..." 
+            class="w-full bg-pitch border border-zinc-800 rounded-xl pl-9 pr-3 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-white transition"
+            oninput="loadCRM()">
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="downloadCSV('customers')" class="px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-xs font-bold flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-file-csv"></i>
+            <span>Export to Google Sheets</span>
+          </button>
+          <button onclick="openNewCustomerModal()" class="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-bold flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-user-plus"></i>
+            <span>Add Customer</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Customer Cards Grid -->
+      <div id="crm-customers-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 overflow-y-auto">
+        <!-- Customer Cards populated dynamically -->
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 4. BEST SELLERS & ANALYTICS TAB                                -->
+    <!-- ============================================================== -->
+    <section id="tab-analytics" class="tab-content hidden flex-1 flex flex-col gap-5 overflow-y-auto">
+      
+      <!-- Top Sales KPIs (Monochrome) -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="bg-card p-4 rounded-2xl border border-zinc-850 shadow">
+          <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Today's Revenue</span>
+          <div class="flex items-baseline gap-1 mt-1">
+            <span class="text-2xl font-extrabold text-emerald-400 font-mono"><span class="currency-symbol">₹</span><span id="ana-today-rev">0</span></span>
+          </div>
+          <span class="text-[10px] text-zinc-500 mt-1 block"><span id="ana-today-orders">0</span> bills generated today</span>
+        </div>
+
+        <div class="bg-card p-4 rounded-2xl border border-zinc-850 shadow">
+          <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">All-Time Sales</span>
+          <div class="flex items-baseline gap-1 mt-1">
+            <span class="text-2xl font-extrabold text-emerald-400 font-mono"><span class="currency-symbol">₹</span><span id="ana-total-rev">0</span></span>
+          </div>
+          <span class="text-[10px] text-zinc-500 mt-1 block"><span id="ana-total-orders">0</span> total invoices</span>
+        </div>
+
+        <div class="bg-card p-4 rounded-2xl border border-zinc-850 shadow">
+          <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Est. Gross Profit</span>
+          <div class="flex items-baseline gap-1 mt-1">
+            <span class="text-2xl font-extrabold text-emerald-400 font-mono"><span class="currency-symbol">₹</span><span id="ana-gross-profit">0</span></span>
+          </div>
+          <span class="text-[10px] text-zinc-500 mt-1 block">Sales minus Cost of Goods</span>
+        </div>
+
+        <div class="bg-card p-4 rounded-2xl border border-zinc-850 shadow">
+          <span class="text-[10px] font-bold text-zinc-400 uppercase tracking-wider block">Registered VIPs</span>
+          <div class="flex items-baseline gap-1 mt-1">
+            <span id="ana-total-customers" class="text-2xl font-extrabold text-white font-mono">0</span>
+          </div>
+          <span class="text-[10px] text-zinc-500 mt-1 block">Active in CRM</span>
+        </div>
+      </div>
+
+      <!-- Best Selling Products Leaderboard -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        
+        <div class="lg:col-span-8 bg-card rounded-2xl border border-zinc-850 shadow p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="text-sm font-extrabold uppercase tracking-wider text-white flex items-center gap-2">
+                <i class="fa-solid fa-trophy text-zinc-300"></i>
+                <span>Best-Selling Styles Leaderboard</span>
+              </h3>
+              <p class="text-xs text-zinc-400 mt-0.5">Top performing apparel ranked by units sold and revenue</p>
+            </div>
+            <span class="text-[10px] font-bold uppercase tracking-wider bg-white text-black px-2 py-0.5 rounded font-mono">TOP 10</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+              <thead class="text-[10px] font-bold uppercase text-zinc-400 border-b border-zinc-850 pb-2">
+                <tr>
+                  <th class="py-2.5 px-3">Rank & Style</th>
+                  <th class="py-2.5 px-3">Category</th>
+                  <th class="py-2.5 px-3 text-center">Units Sold</th>
+                  <th class="py-2.5 px-3 text-right">Revenue</th>
+                  <th class="py-2.5 px-3 text-center">Stock Left</th>
+                </tr>
+              </thead>
+              <tbody id="best-sellers-table-body" class="divide-y divide-zinc-850">
+                <!-- Dynamically populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Category Share Breakdown -->
+        <div class="lg:col-span-4 bg-card rounded-2xl border border-zinc-850 shadow p-5 flex flex-col justify-between">
+          <div>
+            <h3 class="text-sm font-extrabold uppercase tracking-wide text-white flex items-center gap-2 mb-1">
+              <i class="fa-solid fa-chart-pie text-zinc-300"></i>
+              <span>Category Share</span>
+            </h3>
+            <p class="text-xs text-zinc-400 mb-4">Sales contribution by clothing category</p>
+            <div id="category-share-list" class="space-y-3">
+              <!-- Populated dynamically -->
+            </div>
+          </div>
+          
+          <!-- Low Stock Radar -->
+          <div class="mt-6 pt-4 border-t border-zinc-850">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-white mb-2 flex items-center gap-1.5">
+              <i class="fa-solid fa-triangle-exclamation text-zinc-400"></i>
+              <span>Low Stock Watchlist</span>
+            </h4>
+            <div id="low-stock-radar-list" class="space-y-2 text-xs">
+              <!-- Dynamically populated -->
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Recent Transactions Table -->
+      <div class="bg-card rounded-2xl border border-zinc-850 shadow p-5">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="text-sm font-extrabold uppercase tracking-wide text-white flex items-center gap-2">
+            <i class="fa-solid fa-clock-rotate-left text-zinc-400"></i>
+            <span>Recent Billing Transactions</span>
+          </h3>
+          <button onclick="downloadCSV('invoices')" class="px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-xs font-bold flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-file-csv"></i>
+            <span>Export Invoices to Sheets</span>
+          </button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs">
+            <thead class="text-[10px] font-bold uppercase text-zinc-400 border-b border-zinc-850">
+              <tr>
+                <th class="py-2 px-3">Invoice #</th>
+                <th class="py-2 px-3">Date & Time</th>
+                <th class="py-2 px-3">Customer</th>
+                <th class="py-2 px-3 text-center">Items</th>
+                <th class="py-2 px-3">Payment</th>
+                <th class="py-2 px-3 text-right">Grand Total</th>
+                <th class="py-2 px-3 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="recent-invoices-body" class="divide-y divide-zinc-850">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 5. GARMENT QR & BARCODE TAG STUDIO & GENERATOR TAB             -->
+    <!-- ============================================================== -->
+    <section id="tab-tags" class="tab-content hidden flex-1 flex flex-col gap-5 overflow-y-auto">
+      
+      <!-- Studio Header -->
+      <div class="bg-card p-4 sm:p-5 rounded-2xl border border-zinc-850 shadow flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        <div>
+          <h2 class="text-base font-extrabold text-white flex items-center gap-2 font-brand tracking-wider">
+            <i class="fa-solid fa-tags text-white"></i>
+            <span>SOL GARMENT TAG STUDIO & GENERATOR</span>
+          </h2>
+          <p class="text-xs text-zinc-400 mt-0.5">Customize style name, price, size, SKU and generate ready-to-print luxury hang tags or thermal barcode stickers.</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="printGarmentTags()" class="px-4 py-2 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-extrabold flex items-center gap-2 shadow transition">
+            <i class="fa-solid fa-print"></i>
+            <span>Print Current Tags Sheet</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Tag Customizer Studio (Editor + Live Real-Time Preview) -->
+      <div class="bg-card p-5 rounded-2xl border border-zinc-850 shadow grid grid-cols-1 lg:grid-cols-12 gap-6">
+        
+        <!-- Left: Tag Editor Form (7 cols) -->
+        <div class="lg:col-span-7 flex flex-col gap-4 text-xs">
+          
+          <div class="flex items-center justify-between pb-2 border-b border-zinc-850">
+            <span class="text-xs font-extrabold uppercase tracking-wider text-white flex items-center gap-1.5">
+              <i class="fa-solid fa-pen-nib text-zinc-400"></i>
+              <span>Tag Editor & Customizer</span>
+            </span>
+            <button type="button" onclick="resetTagStudioToBlank()" class="text-[11px] text-zinc-400 hover:text-white transition">
+              <i class="fa-solid fa-rotate-left mr-1"></i> New Blank Tag
+            </button>
+          </div>
+
+          <!-- Quick Select from Stock -->
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">
+              Pick Existing Style from Stock <span class="text-zinc-500 font-normal">(Auto-fills all fields below for quick edits)</span>
+            </label>
+            <select id="tag-studio-select-product" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white transition" onchange="loadProductIntoTagStudio(this.value)">
+              <option value="">-- Or Create / Customize Tag From Scratch --</option>
+            </select>
+          </div>
+
+          <!-- Style Name & Category -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div class="sm:col-span-2">
+              <label class="block font-bold text-zinc-400 mb-1">Garment / Style Title *</label>
+              <input type="text" id="tag-studio-name" value="SOL Signature Heavyweight Tee" 
+                class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white font-bold focus:outline-none focus:border-white transition" 
+                placeholder="e.g. SOL Classic Linen Shirt" oninput="updateLiveTagPreview()">
+            </div>
+            <div>
+              <label class="block font-bold text-zinc-400 mb-1">Category / Line</label>
+              <input type="text" id="tag-studio-category" value="T-Shirts" 
+                class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white transition" 
+                placeholder="T-Shirts, Denim..." oninput="updateLiveTagPreview()">
+            </div>
+          </div>
+
+          <!-- Size Selector Pills -->
+          <div class="p-3 bg-pitch rounded-2xl border border-zinc-800">
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="font-extrabold text-white uppercase text-[11px] tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-ruler"></i>
+                <span>Garment Size *</span>
+              </label>
+              <span id="tag-studio-active-size-label" class="text-[11px] font-mono font-bold text-white bg-zinc-900 border border-zinc-700 px-2 py-0.5 rounded">M</span>
+            </div>
+            <div class="flex flex-wrap gap-1.5" id="tag-studio-size-pills">
+              <button type="button" onclick="selectTagStudioSize('XS')" class="tag-size-pill px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">XS</button>
+              <button type="button" onclick="selectTagStudioSize('S')" class="tag-size-pill px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">S</button>
+              <button type="button" onclick="selectTagStudioSize('M')" class="tag-size-pill px-2.5 py-1 rounded-lg border border-white bg-white text-black text-xs font-extrabold hover:bg-zinc-200 transition">M</button>
+              <button type="button" onclick="selectTagStudioSize('L')" class="tag-size-pill px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">L</button>
+              <button type="button" onclick="selectTagStudioSize('XL')" class="tag-size-pill px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">XL</button>
+              <button type="button" onclick="selectTagStudioSize('XXL')" class="tag-size-pill px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">XXL</button>
+              <button type="button" onclick="selectTagStudioSize('Free Size')" class="tag-size-pill px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">Free Size</button>
+              <button type="button" onclick="selectTagStudioSize('28')" class="tag-size-pill px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">28</button>
+              <button type="button" onclick="selectTagStudioSize('30')" class="tag-size-pill px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">30</button>
+              <button type="button" onclick="selectTagStudioSize('32')" class="tag-size-pill px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">32</button>
+              <button type="button" onclick="selectTagStudioSize('34')" class="tag-size-pill px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">34</button>
+              <button type="button" onclick="selectTagStudioSize('36')" class="tag-size-pill px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">36</button>
+            </div>
+            <div class="mt-2 pt-2 border-t border-zinc-850 flex items-center gap-2">
+              <span class="text-[10px] text-zinc-500">Custom Size:</span>
+              <input type="text" id="tag-studio-custom-size" placeholder="e.g. 38, Oversized, 3XL..." 
+                class="flex-1 bg-black border border-zinc-800 rounded-lg px-2.5 py-1 text-white text-xs font-mono focus:outline-none focus:border-white"
+                oninput="handleTagStudioCustomSize(this.value)">
+            </div>
+          </div>
+
+          <!-- Price, Color & Copies -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <div>
+              <label class="block font-bold text-zinc-400 mb-1">M.R.P. Selling Price *</label>
+              <div class="relative">
+                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-emerald-400 font-bold font-mono"><span class="currency-symbol">₹</span></span>
+                <input type="number" id="tag-studio-price" value="1499" 
+                  class="w-full bg-pitch border border-zinc-800 rounded-xl pl-7 pr-2.5 py-2 text-white font-mono font-extrabold text-emerald-400 focus:outline-none focus:border-emerald-400 transition"
+                  oninput="updateLiveTagPreview()">
+              </div>
+            </div>
+            <div>
+              <label class="block font-bold text-zinc-400 mb-1">Color / Variant</label>
+              <input type="text" id="tag-studio-color" value="Jet Black" 
+                class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white transition"
+                placeholder="e.g. Jet Black" oninput="updateLiveTagPreview()">
+            </div>
+            <div>
+              <label class="block font-bold text-zinc-400 mb-1">Print Copies</label>
+              <input type="number" id="tag-studio-copies" value="1" min="1" max="100" 
+                class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white font-mono font-bold focus:outline-none focus:border-white transition">
+            </div>
+          </div>
+
+          <!-- SKU & Barcode Generator -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="font-bold text-zinc-400">SKU / Code *</label>
+                <button type="button" onclick="generateNewTagSku()" class="text-[10px] text-zinc-400 hover:text-white transition">
+                  <i class="fa-solid fa-dice mr-1"></i> Generate New
+                </button>
+              </div>
+              <input type="text" id="tag-studio-sku" value="SOL-TEE-001-M" 
+                class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-white transition"
+                oninput="updateLiveTagPreview()">
+            </div>
+            <div>
+              <label class="block font-bold text-zinc-400 mb-1">Tag Format & Layout</label>
+              <select id="tag-studio-format" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white transition" onchange="updateLiveTagPreview()">
+                <option value="hangtag">Luxury Hang Tag (QR Code & Pricing)</option>
+                <option value="sticker">Barcode Price Sticker (Thermal 50×30mm)</option>
+                <option value="dual">Dual Barcode & QR Hang Tag</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Studio Action Buttons -->
+          <div class="pt-3 border-t border-zinc-850 flex flex-wrap items-center gap-2">
+            <button type="button" onclick="printCustomTagNow()" class="flex-1 py-2.5 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs flex items-center justify-center gap-2 transition shadow">
+              <i class="fa-solid fa-print"></i>
+              <span>Print This Tag Now</span>
+            </button>
+            <button type="button" onclick="addCustomTagToSheet()" class="py-2.5 px-4 rounded-xl bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 text-white font-bold text-xs flex items-center gap-1.5 transition">
+              <i class="fa-solid fa-plus"></i>
+              <span>Add to Print Sheet</span>
+            </button>
+            <button type="button" onclick="saveTagAsNewProduct()" class="py-2.5 px-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 font-semibold text-xs flex items-center gap-1.5 transition" title="Save this custom name & price as an inventory style">
+              <i class="fa-solid fa-box-archive"></i>
+              <span class="hidden sm:inline">Save to Stock</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- Right: Live Real-Time Tag Preview (5 cols) -->
+        <div class="lg:col-span-5 flex flex-col items-center justify-center p-4 bg-pitch rounded-2xl border border-zinc-800 relative">
+          <span class="text-[10px] font-extrabold uppercase tracking-widest text-zinc-500 mb-3 flex items-center gap-1.5">
+            <i class="fa-solid fa-eye text-emerald-400"></i>
+            <span>Live Real-Time Tag Preview</span>
+          </span>
+
+          <!-- The Live Preview Tag Element -->
+          <div id="live-tag-preview-wrapper" class="flex items-center justify-center py-2 min-h-[340px]">
+            <!-- Rendered by updateLiveTagPreview() -->
+          </div>
+
+          <p class="text-[10px] text-zinc-500 mt-3 text-center">
+            Instant live rendering. Typing name or price updates above in real time.
+          </p>
+        </div>
+
+      </div>
+
+      <!-- Tag Sheet Queue & All Inventory Tags Section -->
+      <div class="bg-card p-4 rounded-2xl border border-zinc-850 shadow flex flex-col gap-4">
+        
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-2">
+            <button type="button" id="tag-view-btn-all" onclick="setTagSheetView('all')" class="px-3 py-1.5 rounded-xl bg-white text-black font-extrabold text-xs transition">
+              All Inventory Tags (<span id="tag-count-all">0</span>)
+            </button>
+            <button type="button" id="tag-view-btn-queue" onclick="setTagSheetView('queue')" class="px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-400 font-bold text-xs hover:text-white transition">
+              Custom Print Queue (<span id="tag-count-queue">0</span>)
+            </button>
+          </div>
+
+          <div class="flex items-center gap-2">
+            <div class="relative flex-1 sm:w-64">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
+              <input type="text" id="tag-sheet-search" placeholder="Filter tags by name, size..." 
+                class="w-full bg-pitch border border-zinc-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-white transition"
+                oninput="filterTagSheet()">
+            </div>
+            <button onclick="clearCustomTagQueue()" id="tag-clear-queue-btn" class="hidden px-3 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-red-400 text-xs font-bold transition">
+              Clear Queue
+            </button>
+            <button onclick="printGarmentTags()" class="px-3.5 py-1.5 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-extrabold flex items-center gap-1.5 shadow transition">
+              <i class="fa-solid fa-print"></i>
+              <span>Print Sheet</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tag Grid Display -->
+        <div id="printable-tags-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 p-4 bg-pitch rounded-2xl border border-zinc-850 overflow-y-auto min-h-[220px]">
+          <!-- Rendered garment tags -->
+        </div>
+
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 6. GOOGLE SHEETS & GMAIL INTEGRATIONS TAB (NEW!)               -->
+    <!-- ============================================================== -->
+    <section id="tab-integrations" class="tab-content hidden flex-1 max-w-4xl mx-auto w-full flex flex-col gap-5 overflow-y-auto">
+      
+      <div class="bg-card p-5 rounded-2xl border border-zinc-850 shadow">
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-10 h-10 rounded-xl bg-white text-black flex items-center justify-center font-bold text-lg">
+            <i class="fa-solid fa-table-cells"></i>
+          </div>
+          <div>
+            <h2 class="text-base font-extrabold text-white">Google Sheets 2-Way Sync & Export</h2>
+            <p class="text-xs text-zinc-400">Keep all your sales, customers, and stock automatically synced to your Google Sheets.</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 my-4">
+          <div class="bg-pitch p-3.5 rounded-xl border border-zinc-800 text-center flex flex-col justify-between">
+            <div>
+              <i class="fa-solid fa-file-invoice text-2xl text-white mb-2"></i>
+              <h4 class="text-xs font-bold text-white uppercase">Invoices Sheet</h4>
+              <p class="text-[11px] text-zinc-500 mt-1">Full breakdown of all sales, payments & taxes</p>
+            </div>
+            <button onclick="downloadCSV('invoices')" class="mt-3 py-1.5 px-3 rounded-lg bg-white text-black hover:bg-zinc-200 font-bold text-xs transition">
+              Download CSV
+            </button>
+          </div>
+
+          <div class="bg-pitch p-3.5 rounded-xl border border-zinc-800 text-center flex flex-col justify-between">
+            <div>
+              <i class="fa-solid fa-shirt text-2xl text-white mb-2"></i>
+              <h4 class="text-xs font-bold text-white uppercase">Inventory Sheet</h4>
+              <p class="text-[11px] text-zinc-500 mt-1">All styles, SKUs, sizes, costs, and stock</p>
+            </div>
+            <button onclick="downloadCSV('products')" class="mt-3 py-1.5 px-3 rounded-lg bg-white text-black hover:bg-zinc-200 font-bold text-xs transition">
+              Download CSV
+            </button>
+          </div>
+
+          <div class="bg-pitch p-3.5 rounded-xl border border-zinc-800 text-center flex flex-col justify-between">
+            <div>
+              <i class="fa-solid fa-users text-2xl text-white mb-2"></i>
+              <h4 class="text-xs font-bold text-white uppercase">Customer CRM Sheet</h4>
+              <p class="text-[11px] text-zinc-500 mt-1">Customer phone directory, spend & VIP tiers</p>
+            </div>
+            <button onclick="downloadCSV('customers')" class="mt-3 py-1.5 px-3 rounded-lg bg-white text-black hover:bg-zinc-200 font-bold text-xs transition">
+              Download CSV
+            </button>
+          </div>
+
+          <div class="bg-pitch p-3.5 rounded-xl border border-emerald-900/40 text-center flex flex-col justify-between">
+            <div>
+              <i class="fa-solid fa-database text-2xl text-emerald-400 mb-2"></i>
+              <h4 class="text-xs font-bold text-white uppercase">Full Database File</h4>
+              <p class="text-[11px] text-zinc-500 mt-1">Raw snapshot of clothing_pos.db for safety & backups</p>
+            </div>
+            <button onclick="window.open('/api/backup/download', '_blank')" class="mt-3 py-1.5 px-3 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold text-xs transition">
+              <i class="fa-solid fa-download mr-1"></i> Download .db
+            </button>
+          </div>
+        </div>
+
+        <!-- Real-Time Automated Webhook Sync Setup -->
+        <div class="border-t border-zinc-800 pt-4 mt-4">
+          <h3 class="text-xs font-bold uppercase tracking-wider text-white mb-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-bolt"></i>
+            <span>Real-Time Automated Google Sheets Webhook</span>
+          </h3>
+          <p class="text-[11px] text-zinc-400 mb-3">Every time you complete a bill, it can automatically append a row in your live Google Sheet in the background!</p>
+          
+          <div class="space-y-3 text-xs">
+            <div>
+              <label class="block font-bold text-zinc-300 mb-1">Your Google Apps Script Webhook URL</label>
+              <div class="flex gap-2">
+                <input type="url" id="int-sheets-url" placeholder="https://script.google.com/macros/s/AKfycb.../exec" class="flex-1 bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-white">
+                <button onclick="saveWebhookFromIntegrations()" class="px-4 py-2 rounded-xl bg-white text-black font-bold text-xs hover:bg-zinc-200 transition">
+                  Save Sync URL
+                </button>
+              </div>
+            </div>
+
+            <!-- Ready-to-copy Google Apps Script Code -->
+            <div class="bg-pitch p-3 rounded-xl border border-zinc-800">
+              <div class="flex items-center justify-between mb-2">
+                <span class="text-[11px] font-bold text-zinc-300 uppercase">1-Step Setup: Google Apps Script Code</span>
+                <button onclick="copyAppsScriptCode()" id="copy-script-btn" class="px-2 py-0.5 rounded bg-zinc-800 hover:bg-zinc-700 text-white font-mono text-[10px] transition">
+                  <i class="fa-solid fa-copy mr-1"></i> Copy Script
+                </button>
+              </div>
+              <p class="text-[10px] text-zinc-500 mb-2">Instructions: In your Google Sheet, click <strong>Extensions → Apps Script</strong>, paste this code, and click <strong>Deploy → New deployment → Web app</strong>. Then paste the URL above!</p>
+              <pre id="apps-script-snippet" class="bg-black p-2.5 rounded-lg border border-zinc-900 font-mono text-[10px] text-zinc-300 overflow-x-auto max-h-36">function doPost(e) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
+  var data = JSON.parse(e.postData.contents);
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(["Invoice #", "Date", "Customer Name", "Customer Phone", "Items Summary", "Subtotal", "Discount", "Tax", "Grand Total", "Payment Method", "Notes"]);
+  }
+  sheet.appendRow([
+    data.invoice_number,
+    data.date,
+    data.customer_name,
+    data.customer_phone,
+    data.items_summary,
+    data.subtotal,
+    data.discount,
+    data.tax,
+    data.grand_total,
+    data.payment_method,
+    data.notes
+  ]);
+  return ContentService.createTextOutput(JSON.stringify({status: "success"})).setMimeType(ContentService.MimeType.JSON);
+}</pre>
+            </div>
+
+            <!-- Bulk Inventory Import from Google Sheets CSV -->
+            <div class="bg-pitch p-3 rounded-xl border border-zinc-800">
+              <h4 class="text-[11px] font-bold text-white uppercase mb-1">Bulk Import Garments from Google Sheets / Excel CSV</h4>
+              <p class="text-[10px] text-zinc-400 mb-2">Export your inventory sheet as CSV and upload it here to load hundreds of items instantly.</p>
+              <div class="flex items-center gap-2">
+                <input type="file" id="csv-import-file" accept=".csv" class="text-xs text-zinc-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-xs file:font-bold file:bg-white file:text-black hover:file:bg-zinc-200 cursor-pointer">
+                <button onclick="handleCSVImportUpload()" class="px-3.5 py-1.5 rounded-xl bg-zinc-850 hover:bg-zinc-700 text-white font-bold text-xs border border-zinc-700 transition">
+                  Upload & Import
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Gmail & Email Configuration -->
+      <div class="bg-card p-5 rounded-2xl border border-zinc-850 shadow">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="w-10 h-10 rounded-xl bg-white text-black flex items-center justify-center font-bold text-lg">
+            <i class="fa-solid fa-envelope"></i>
+          </div>
+          <div>
+            <h2 class="text-base font-extrabold text-white">Gmail Integration</h2>
+            <p class="text-xs text-zinc-400">Send luxury digital e-receipts directly to your customer's email.</p>
+          </div>
+        </div>
+
+        <div class="space-y-3 text-xs bg-pitch p-4 rounded-xl border border-zinc-800">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-zinc-300 mb-1">Your Store Gmail Address</label>
+              <input type="email" id="int-gmail-user" placeholder="sol.lifestyle@gmail.com" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-white">
+            </div>
+            <div>
+              <label class="block font-bold text-zinc-300 mb-1">Gmail App Password (16 letters)</label>
+              <input type="password" id="int-gmail-password" placeholder="xxxx xxxx xxxx xxxx" class="w-full bg-black border border-zinc-800 rounded-xl px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-white">
+              <span class="text-[9px] text-zinc-500 mt-0.5 block">Generate in Google Account → Security → 2-Step Verification → App passwords.</span>
+            </div>
+          </div>
+          <div class="flex justify-end">
+            <button onclick="saveGmailFromIntegrations()" class="px-4 py-2 rounded-xl bg-white text-black font-bold text-xs hover:bg-zinc-200 transition">
+              Save Gmail Settings
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ============================================================== -->
+    <!-- 7. STORE SETTINGS TAB                                          -->
+    <!-- ============================================================== -->
+    <section id="tab-settings" class="tab-content hidden flex-1 max-w-3xl mx-auto w-full flex flex-col gap-4">
+      
+      <div class="bg-card p-6 rounded-2xl border border-zinc-850 shadow">
+        <h2 class="text-base font-extrabold text-white flex items-center gap-2 mb-4 font-brand uppercase tracking-wider">
+          <i class="fa-solid fa-sliders text-zinc-400"></i>
+          <span>SOL Brand & Invoicing Configuration</span>
+        </h2>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Brand Name</label>
+            <input type="text" id="set-store-name" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white" value="SOL • Soul of Lifestyle">
+          </div>
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Tagline</label>
+            <input type="text" id="set-tagline" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white" value="PREMIUM WEAR | MODERN ESSENTIALS | ELEVATED YOU">
+          </div>
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Phone Number</label>
+            <input type="text" id="set-phone" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white">
+          </div>
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Email</label>
+            <input type="email" id="set-email" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block font-bold text-zinc-400 mb-1">Store Address</label>
+            <input type="text" id="set-address" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white">
+          </div>
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">GSTIN / Tax ID</label>
+            <input type="text" id="set-gstin" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white font-mono">
+          </div>
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Currency Symbol</label>
+            <input type="text" id="set-currency" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white font-mono" value="₹">
+          </div>
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Store UPI ID (Dynamic Payment QR)</label>
+            <input type="text" id="set-upi" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white font-mono" placeholder="sol@okhdfcbank">
+          </div>
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Default GST / Tax Rate (%)</label>
+            <input type="number" id="set-tax" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white font-mono" value="5.0">
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block font-bold text-zinc-400 mb-1">Return & Exchange Policy (Prints on Bill)</label>
+            <textarea id="set-policy" rows="2" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white">Exchange within 7 days with original tags and bill intact. No cash refunds.</textarea>
+          </div>
+        </div>
+
+        <div class="mt-6 flex justify-end">
+          <button onclick="saveStoreSettings()" class="px-5 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs transition shadow">
+            <i class="fa-solid fa-floppy-disk mr-1.5"></i> Save All Settings
+          </button>
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ============================================================== -->
+  <!-- MODALS                                                         -->
+  <!-- ============================================================== -->
+
+  <!-- 1. LIVE CAMERA SCANNER MODAL (Monochrome) -->
+  <div id="modal-scanner" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-card rounded-3xl border border-zinc-800 max-w-md w-full p-5 shadow-2xl relative flex flex-col">
+      <div class="flex items-center justify-between mb-3">
+        <div class="flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-white animate-ping"></span>
+          <h3 class="text-xs font-extrabold uppercase tracking-wider text-white">Live Garment Scanner</h3>
+        </div>
+        <button onclick="closeLiveScannerModal()" class="text-zinc-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Video Feed Viewport -->
+      <div class="relative bg-black rounded-2xl overflow-hidden border border-zinc-800 aspect-square flex items-center justify-center">
+        <div id="qr-reader" class="w-full h-full"></div>
+        <div class="absolute inset-0 pointer-events-none flex flex-col items-center justify-center">
+          <div class="w-48 h-48 border-2 border-white rounded-xl relative">
+            <div class="absolute top-0 left-0 w-4 h-4 border-t-4 border-l-4 border-white -mt-1 -ml-1"></div>
+            <div class="absolute top-0 right-0 w-4 h-4 border-t-4 border-r-4 border-white -mt-1 -mr-1"></div>
+            <div class="absolute bottom-0 left-0 w-4 h-4 border-b-4 border-l-4 border-white -mb-1 -ml-1"></div>
+            <div class="absolute bottom-0 right-0 w-4 h-4 border-b-4 border-r-4 border-white -mb-1 -mr-1"></div>
+          </div>
+          <span class="mt-3 text-[10px] font-bold text-white bg-black/80 px-3 py-1 rounded-full uppercase tracking-wider">Point at SOL Garment QR or Barcode</span>
+        </div>
+      </div>
+
+      <div id="scanner-last-detected" class="mt-3 text-center text-xs text-zinc-400 font-mono truncate">
+        Ready to scan...
+      </div>
+
+      <div class="mt-4 flex gap-2">
+        <button onclick="closeLiveScannerModal()" class="flex-1 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-bold text-xs transition">
+          Done Scanning
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2. CUSTOM NAME & PRICE MODAL ("I can give name and price according to myself") -->
+  <div id="modal-custom-item" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-card rounded-3xl border border-zinc-800 max-w-md w-full p-5 shadow-2xl relative">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="text-sm font-extrabold text-white uppercase tracking-wider">Add Custom Line Item</h3>
+          <p class="text-[11px] text-zinc-400">Tailoring, custom garments, alterations or special prices</p>
+        </div>
+        <button onclick="closeCustomItemModal()" class="text-zinc-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-zinc-400 mb-1">Item / Service Name *</label>
+          <input type="text" id="custom-item-name" placeholder="e.g. Bespoke Tailored Suit, Alteration..." class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Price (<span class="currency-symbol">₹</span>) *</label>
+            <input type="number" id="custom-item-price" placeholder="0" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white font-mono font-bold focus:outline-none focus:border-white">
+          </div>
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Quantity</label>
+            <input type="number" id="custom-item-qty" value="1" min="1" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-white">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Size (optional)</label>
+            <input type="text" id="custom-item-size" placeholder="e.g. Custom, L, 34" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white">
+          </div>
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Color / Variant (optional)</label>
+            <input type="text" id="custom-item-color" placeholder="e.g. Jet Black" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white">
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-5 flex gap-2">
+        <button onclick="closeCustomItemModal()" class="flex-1 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold text-xs transition">
+          Cancel
+        </button>
+        <button onclick="addCustomItemToCart()" class="flex-1 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs transition">
+          Add To Bill
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 3. INVOICE COMPLETED & MULTI-CHANNEL SHARING (WhatsApp, Gmail, Thermal Print) -->
+  <div id="modal-invoice-success" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-card rounded-3xl border border-zinc-800 max-w-xl w-full p-5 shadow-2xl relative max-h-[94vh] flex flex-col">
+      
+      <div class="flex items-center justify-between pb-3 border-b border-zinc-850">
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-full bg-white text-black flex items-center justify-center font-bold text-xs">
+            <i class="fa-solid fa-check"></i>
+          </div>
+          <div>
+            <h3 class="text-xs font-extrabold uppercase tracking-wider text-white">Bill Generated Successfully</h3>
+            <span id="modal-inv-id" class="text-xs font-mono text-zinc-400 font-bold">INV-2026-0005</span>
+          </div>
+        </div>
+        <button onclick="closeInvoiceSuccessModal()" class="text-zinc-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Action Buttons Row (WhatsApp, Gmail, Thermal Print, A4) -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 my-3">
+        <button onclick="shareInvoiceViaWhatsApp()" class="py-2.5 px-2 rounded-xl bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition">
+          <i class="fa-brands fa-whatsapp text-sm"></i>
+          <span>WhatsApp</span>
+        </button>
+        <button onclick="openGmailReceiptCompose()" class="py-2.5 px-2 rounded-xl bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 text-white text-xs font-bold flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-envelope text-sm"></i>
+          <span>Gmail</span>
+        </button>
+        <button onclick="printThermalReceipt()" class="py-2.5 px-2 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-extrabold flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-print"></i>
+          <span>Thermal</span>
+        </button>
+        <button onclick="printA4Invoice()" class="py-2.5 px-2 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-xs font-bold flex items-center justify-center gap-1.5 transition">
+          <i class="fa-solid fa-file-invoice"></i>
+          <span>A4 Bill</span>
+        </button>
+      </div>
+
+      <!-- Invoice Receipt Preview -->
+      <div class="flex-1 overflow-y-auto p-4 bg-black rounded-2xl border border-zinc-900 flex justify-center">
+        <div id="printable-receipt-container" class="receipt-paper rounded-lg">
+          <!-- Populated by JavaScript with SOL Logo and items -->
+        </div>
+      </div>
+
+      <div class="mt-4 pt-2">
+        <button onclick="closeInvoiceSuccessModal()" class="w-full py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs transition">
+          Start Next Bill
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal: Customer Mobile Prompt Before Billing -->
+  <div id="modal-customer-checkout-prompt" class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-card rounded-3xl border border-zinc-800 max-w-md w-full p-5 sm:p-6 shadow-2xl relative animate-fade-in">
+      <div class="flex items-center justify-between pb-3 border-b border-zinc-850">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 flex items-center justify-center text-sm font-bold">
+            <i class="fa-solid fa-user-check"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-extrabold uppercase tracking-wide text-white">Customer Mobile & WhatsApp Bill</h3>
+            <p class="text-[11px] text-zinc-400">Attach customer to send official receipt & earn points</p>
+          </div>
+        </div>
+        <button onclick="closeCustomerCheckoutPromptModal()" class="text-zinc-500 hover:text-white transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3.5 my-4">
+        <!-- Customer Mobile Input with auto search -->
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1.5">
+            <i class="fa-brands fa-whatsapp text-emerald-400 mr-1"></i> Customer Mobile Number <span class="text-emerald-400">*</span>
+          </label>
+          <div class="relative">
+            <i class="fa-solid fa-phone absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
+            <input type="tel" id="prompt-cust-phone" placeholder="Enter 10-digit mobile number (e.g. 98201 12345)..." 
+              class="w-full bg-pitch border border-zinc-700 focus:border-white rounded-xl pl-9 pr-3 py-2.5 text-sm text-white placeholder-zinc-500 font-mono focus:outline-none transition"
+              oninput="handlePromptPhoneInput(this.value)">
+          </div>
+          <!-- Auto-matched customer pill -->
+          <div id="prompt-matched-customer-pill" class="hidden mt-2 p-2 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-between text-xs">
+            <div class="flex items-center gap-2">
+              <span id="prompt-matched-name" class="font-bold text-white">Aarav Sharma</span>
+              <span id="prompt-matched-tier" class="text-[9px] uppercase font-bold bg-zinc-800 px-1.5 py-0.5 rounded text-emerald-400 border border-emerald-900">GOLD VIP</span>
+            </div>
+            <span class="text-[10px] text-zinc-400 font-mono">Existing Customer</span>
+          </div>
+        </div>
+
+        <!-- Customer Name Input -->
+        <div>
+          <label class="block text-[11px] font-bold uppercase tracking-wider text-zinc-300 mb-1.5">
+            <i class="fa-solid fa-user text-zinc-400 mr-1"></i> Customer Name (Optional)
+          </label>
+          <input type="text" id="prompt-cust-name" placeholder="Customer full name..." 
+            class="w-full bg-pitch border border-zinc-800 focus:border-white rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-zinc-600 focus:outline-none transition">
+        </div>
+
+        <!-- Order Summary Pill -->
+        <div class="bg-pitch p-3 rounded-2xl border border-zinc-850 flex items-center justify-between text-xs">
+          <span class="text-zinc-400">Total Invoice Amount:</span>
+          <span class="font-mono font-extrabold text-base text-emerald-400">
+            <span class="currency-symbol">₹</span><span id="prompt-grand-total">0.00</span>
+          </span>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col gap-2 pt-2 border-t border-zinc-850">
+        <button onclick="confirmCustomerAndCompleteSale()" class="w-full py-3 px-4 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition shadow-lg">
+          <i class="fa-brands fa-whatsapp text-emerald-600 text-sm"></i>
+          <span>Save Customer & Generate Bill</span>
+        </button>
+        <button onclick="skipCustomerAndCompleteSale()" class="w-full py-2 px-3 text-zinc-400 hover:text-white font-semibold text-xs transition text-center">
+          Skip — Proceed as Walk-in Guest (No Phone)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal: Sold Products & Sales Reports -->
+  <div id="modal-sold-products" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-card rounded-3xl border border-zinc-800 max-w-4xl w-full p-4 sm:p-6 shadow-2xl relative max-h-[92vh] flex flex-col animate-fade-in">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-zinc-850">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-2xl bg-white text-black flex items-center justify-center font-bold text-sm">
+            <i class="fa-solid fa-boxes-stacked"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-extrabold uppercase tracking-wide text-white">Sold Products & Sales Report</h3>
+            <p class="text-xs text-zinc-400">Real-time breakdown of sold apparel, stock remaining & invoice logs</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="loadSoldProductsModal()" title="Refresh Data" class="w-8 h-8 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 flex items-center justify-center text-xs transition">
+            <i class="fa-solid fa-arrows-rotate"></i>
+          </button>
+          <button onclick="closeSoldProductsModal()" class="w-8 h-8 rounded-xl bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 flex items-center justify-center text-xs transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Quick Metrics Summary -->
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5 my-3">
+        <div class="bg-pitch p-3 rounded-2xl border border-zinc-850">
+          <span class="text-[9px] uppercase font-bold text-zinc-500 block">Today Units Sold</span>
+          <span id="sold-stat-today-units" class="text-xl font-extrabold text-emerald-400 font-mono">0</span>
+        </div>
+        <div class="bg-pitch p-3 rounded-2xl border border-zinc-850">
+          <span class="text-[9px] uppercase font-bold text-zinc-500 block">Today's Revenue</span>
+          <span class="text-xl font-extrabold text-emerald-400 font-mono"><span class="currency-symbol">₹</span><span id="sold-stat-today-rev">0.00</span></span>
+        </div>
+        <div class="bg-pitch p-3 rounded-2xl border border-zinc-850">
+          <span class="text-[9px] uppercase font-bold text-zinc-500 block">Total Units Sold</span>
+          <span id="sold-stat-total-units" class="text-xl font-extrabold text-white font-mono">0</span>
+        </div>
+        <div class="bg-pitch p-3 rounded-2xl border border-zinc-850">
+          <span class="text-[9px] uppercase font-bold text-zinc-500 block">Total Revenue</span>
+          <span class="text-xl font-extrabold text-white font-mono"><span class="currency-symbol">₹</span><span id="sold-stat-total-rev">0.00</span></span>
+        </div>
+      </div>
+
+      <!-- Tab Switch: Sold Garments vs Recent Sales -->
+      <div class="flex items-center justify-between gap-2 border-b border-zinc-850 pb-2 mb-3">
+        <div class="flex items-center gap-1.5 bg-pitch p-1 rounded-xl border border-zinc-850 text-xs">
+          <button onclick="switchSoldViewTab('items')" id="sold-tab-items-btn" class="px-3 py-1.5 rounded-lg font-bold bg-white text-black transition">
+            <i class="fa-solid fa-shirt mr-1"></i> Sold Items
+          </button>
+          <button onclick="switchSoldViewTab('invoices')" id="sold-tab-invoices-btn" class="px-3 py-1.5 rounded-lg font-semibold text-zinc-400 hover:text-white transition">
+            <i class="fa-solid fa-receipt mr-1"></i> Recent Invoices
+          </button>
+        </div>
+        <div class="relative flex-1 max-w-xs">
+          <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
+          <input type="text" id="sold-search-input" placeholder="Search product, SKU..." 
+            class="w-full bg-pitch border border-zinc-800 rounded-xl pl-8 pr-3 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-white transition"
+            oninput="filterSoldProductsList(this.value)">
+        </div>
+      </div>
+
+      <!-- Content Area -->
+      <div class="flex-1 overflow-y-auto">
+        <!-- Tab 1: Sold Items Table -->
+        <div id="sold-items-view">
+          <table class="w-full text-left text-xs">
+            <thead class="text-[10px] uppercase font-bold text-zinc-400 border-b border-zinc-850 sticky top-0 bg-card">
+              <tr>
+                <th class="py-2.5 px-3">Garment Style</th>
+                <th class="py-2.5 px-2">Size / Color / SKU</th>
+                <th class="py-2.5 px-2 text-center">Units Sold</th>
+                <th class="py-2.5 px-2 text-right">Revenue</th>
+                <th class="py-2.5 px-2 text-center">Stock Left</th>
+                <th class="py-2.5 px-3 text-right">Last Sold</th>
+              </tr>
+            </thead>
+            <tbody id="sold-items-table-body" class="divide-y divide-zinc-850">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+          <div id="sold-items-empty" class="hidden py-12 text-center text-zinc-500 text-xs">
+            No items sold yet.
+          </div>
+        </div>
+
+        <!-- Tab 2: Recent Invoices Table -->
+        <div id="sold-invoices-view" class="hidden">
+          <table class="w-full text-left text-xs">
+            <thead class="text-[10px] uppercase font-bold text-zinc-400 border-b border-zinc-850 sticky top-0 bg-card">
+              <tr>
+                <th class="py-2.5 px-3">Invoice #</th>
+                <th class="py-2.5 px-2">Customer</th>
+                <th class="py-2.5 px-2 text-center">Units</th>
+                <th class="py-2.5 px-2">Payment</th>
+                <th class="py-2.5 px-2 text-right">Total</th>
+                <th class="py-2.5 px-3 text-center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="sold-invoices-table-body" class="divide-y divide-zinc-850">
+              <!-- Populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 4. MOBILE DEPLOYMENT GUIDE MODAL -->
+  <div id="modal-mobile-deploy" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-card rounded-3xl border border-zinc-800 max-w-lg w-full p-6 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between pb-3 border-b border-zinc-850 mb-4">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-mobile-screen-button text-white text-lg"></i>
+          <h3 class="text-sm font-extrabold uppercase tracking-wider text-white">How to Run & Deploy Live on Mobile</h3>
+        </div>
+        <button onclick="closeMobileDeployModal()" class="text-zinc-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-4 text-xs">
+        
+        <!-- Step 1: Local Wi-Fi Access -->
+        <div class="bg-pitch p-3.5 rounded-xl border border-zinc-800">
+          <span class="text-[10px] font-extrabold uppercase bg-white text-black px-2 py-0.5 rounded">Option 1: Instant in Store (Wi-Fi)</span>
+          <h4 class="font-bold text-white text-sm mt-2 mb-1">Open Directly on iPhone / Android / iPad</h4>
+          <p class="text-zinc-400 mb-2">Ensure your mobile phone is connected to the same Wi-Fi as your Mac. Open Safari or Chrome on your phone and visit:</p>
+          <div class="bg-black p-2 rounded-lg border border-zinc-850 font-mono text-center text-white font-bold select-all" id="mobile-local-ip-display">
+            http://YOUR_MAC_IP:8000
+          </div>
+        </div>
+
+        <!-- Step 2: Install as Native App -->
+        <div class="bg-pitch p-3.5 rounded-xl border border-zinc-800">
+          <span class="text-[10px] font-extrabold uppercase bg-white text-black px-2 py-0.5 rounded">Option 2: Install as Native App (PWA)</span>
+          <h4 class="font-bold text-white text-sm mt-2 mb-1">Install Icon on Phone Home Screen</h4>
+          <ul class="space-y-1.5 text-zinc-300 list-disc list-inside mt-2 text-[11px]">
+            <li><strong>iPhone (Safari):</strong> Tap the <strong>Share</strong> button <i class="fa-solid fa-arrow-up-from-bracket"></i> at the bottom → tap <strong>"Add to Home Screen"</strong>.</li>
+            <li><strong>Android (Chrome):</strong> Tap the <strong>Three Dots ⋮</strong> at the top right → tap <strong>"Install App"</strong> or <strong>"Add to Home screen"</strong>.</li>
+            <li>The <strong>SOL</strong> app icon will appear right on your phone screen and open in full-screen mode with camera scanning enabled!</li>
+          </ul>
+        </div>
+
+        <!-- Step 3: Remote Access Anywhere -->
+        <div class="bg-pitch p-3.5 rounded-xl border border-zinc-800">
+          <span class="text-[10px] font-extrabold uppercase bg-white text-black px-2 py-0.5 rounded">Option 3: Access Anywhere Over 4G / 5G</span>
+          <h4 class="font-bold text-white text-sm mt-2 mb-1">Free 1-Command Public HTTPS Cloud Tunnel</h4>
+          <p class="text-zinc-400 mb-2">Run this single command in your Mac terminal to get an instant, free secure HTTPS link to access your POS anywhere in the city:</p>
+          <div class="bg-black p-2.5 rounded-lg border border-zinc-850 font-mono text-[11px] text-zinc-200">
+            npx localtunnel --port 8000
+          </div>
+          <p class="text-[10px] text-zinc-500 mt-1">Or run <code>cloudflared tunnel --url http://localhost:8000</code> for a zero-trust permanent tunnel.</p>
+        </div>
+
+      </div>
+
+      <div class="mt-5">
+        <button onclick="closeMobileDeployModal()" class="w-full py-2.5 rounded-xl bg-white text-black font-extrabold text-xs hover:bg-zinc-200 transition">
+          Got It
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 4.5 SMART PHOTO STOCK INTAKE MODAL (AI Visual Organizer & Memory) -->
+  <div id="modal-photo-intake" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-card rounded-3xl border border-zinc-800 max-w-4xl w-full p-4 sm:p-6 shadow-2xl relative max-h-[95vh] flex flex-col">
+      
+      <!-- Modal Header -->
+      <div class="flex items-center justify-between pb-3 border-b border-zinc-850">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-white text-black flex items-center justify-center font-bold text-sm shadow">
+            <i class="fa-solid fa-camera-retro"></i>
+          </div>
+          <div>
+            <h3 class="text-sm font-extrabold uppercase tracking-wider text-white">Visual Stock Intake & AI Organizer</h3>
+            <p class="text-[11px] text-zinc-400">Snap garment photo — AI organizes style, category & color. Set size & price to remember forever.</p>
+          </div>
+        </div>
+        <button onclick="closeSmartPhotoIntakeModal()" class="text-zinc-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <!-- Hidden File Inputs -->
+      <input type="file" id="photo-intake-camera" accept="image/*" capture="environment" class="hidden" onchange="if(this.files && this.files[0]) handlePhotoIntakeFile(this.files[0])">
+      <input type="file" id="photo-intake-file" accept="image/*" class="hidden" onchange="if(this.files && this.files[0]) handlePhotoIntakeFile(this.files[0])">
+
+      <!-- Modal Body (Two-Column Layout) -->
+      <div class="flex-1 overflow-y-auto py-4 grid grid-cols-1 md:grid-cols-12 gap-5">
+        
+        <!-- Left Column: Photo Viewport & Capture (5 Cols) -->
+        <div class="md:col-span-5 flex flex-col gap-3">
+          
+          <!-- Drop / Camera Zone (Visible when no photo is active) -->
+          <div id="photo-intake-empty-state" class="border-2 border-dashed border-zinc-800 hover:border-zinc-600 rounded-2xl p-6 flex flex-col items-center justify-center text-center bg-pitch/60 min-h-[260px] transition">
+            <div class="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-850 flex items-center justify-center text-white text-xl mb-3 shadow-inner">
+              <i class="fa-solid fa-camera"></i>
+            </div>
+            <h4 class="text-xs font-bold text-white uppercase tracking-wider mb-1">Snap Garment Photo</h4>
+            <p class="text-[11px] text-zinc-400 mb-4 max-w-xs">Capture physical garment or hangtag. AI recognizes color, silhouette and generates SKU.</p>
+            
+            <div class="flex flex-col w-full gap-2">
+              <button type="button" onclick="triggerIntakeCamera()" class="w-full py-2.5 px-3 rounded-xl bg-white hover:bg-zinc-200 text-black text-xs font-extrabold flex items-center justify-center gap-2 transition shadow">
+                <i class="fa-solid fa-camera"></i>
+                <span>Open Camera (Phone / Webcam)</span>
+              </button>
+              <button type="button" onclick="triggerIntakeFile()" class="w-full py-2 px-3 rounded-xl bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 text-zinc-300 text-xs font-semibold flex items-center justify-center gap-2 transition">
+                <i class="fa-solid fa-folder-open"></i>
+                <span>Upload From Device</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Photo Preview Container (Visible when photo is taken) -->
+          <div id="photo-intake-preview-container" class="hidden flex-1 flex flex-col">
+            <div class="relative w-full aspect-square max-h-72 rounded-2xl overflow-hidden border border-zinc-800 bg-black flex items-center justify-center group shadow-lg">
+              <img id="photo-intake-preview-img" src="" alt="Garment preview" class="w-full h-full object-cover">
+              
+              <!-- Floating change button -->
+              <div class="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-2 transition backdrop-blur-xs">
+                <button type="button" onclick="triggerIntakeCamera()" class="px-3 py-1.5 rounded-lg bg-white text-black font-bold text-xs hover:bg-zinc-200 transition shadow">
+                  <i class="fa-solid fa-camera mr-1"></i> Retake
+                </button>
+                <button type="button" onclick="triggerIntakeFile()" class="px-3 py-1.5 rounded-lg bg-zinc-900 border border-zinc-700 text-white font-bold text-xs hover:bg-zinc-800 transition shadow">
+                  <i class="fa-solid fa-folder-open mr-1"></i> Change
+                </button>
+              </div>
+
+              <!-- Badges on image -->
+              <span class="absolute top-2.5 left-2.5 text-[9px] font-extrabold uppercase bg-black/80 backdrop-blur-md text-white border border-zinc-700 px-2 py-0.5 rounded-full">
+                <i class="fa-solid fa-eye mr-1 text-emerald-400"></i> Visual Memory Active
+              </span>
+            </div>
+
+            <!-- AI Scanning Status indicator -->
+            <div id="photo-intake-loading-badge" class="hidden mt-2 p-2.5 bg-zinc-900 border border-zinc-800 rounded-xl flex items-center gap-2 text-xs text-white">
+              <i class="fa-solid fa-spinner fa-spin text-emerald-400 text-sm"></i>
+              <span class="text-zinc-300">Analyzing garment silhouette, color histogram & pattern...</span>
+            </div>
+
+            <div id="photo-intake-success-badge" class="hidden mt-2 p-2.5 bg-emerald-950/40 border border-emerald-500/40 rounded-xl flex items-center justify-between text-xs text-emerald-300">
+              <div class="flex items-center gap-1.5">
+                <i class="fa-solid fa-circle-check text-emerald-400"></i>
+                <span id="photo-intake-ai-tag" class="font-bold">Recognized Style & Attributes</span>
+              </div>
+              <span class="text-[10px] text-zinc-400 font-mono">Organized</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Right Column: Auto-Organized Garment Details & Size/Price Controls (7 Cols) -->
+        <div class="md:col-span-7 flex flex-col gap-3 text-xs">
+          
+          <input type="hidden" id="intake-image-url">
+
+          <!-- Style Name -->
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">
+              Garment Title & Style Name * 
+              <span class="text-[10px] font-normal text-zinc-500">(Auto-detected, feel free to edit)</span>
+            </label>
+            <input type="text" id="intake-name" placeholder="e.g. SOL Oversized Heavyweight Cotton Tee" 
+              class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white font-bold text-xs focus:outline-none focus:border-white transition">
+          </div>
+
+          <!-- Category & Color -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-zinc-400 mb-1">Category</label>
+              <select id="intake-category" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-white" onchange="updateIntakeSku()">
+                <option value="T-Shirts">T-Shirts</option>
+                <option value="Shirts">Shirts</option>
+                <option value="Denim & Jeans">Denim & Jeans</option>
+                <option value="Trousers & Pants">Trousers & Pants</option>
+                <option value="Blazers & Jackets">Blazers & Jackets</option>
+                <option value="Hoodies & Sweatshirts">Hoodies & Sweatshirts</option>
+                <option value="Co-ord Sets">Co-ord Sets</option>
+                <option value="Dresses">Dresses</option>
+                <option value="Accessories">Accessories</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-zinc-400 mb-1">Color / Wash</label>
+              <input type="text" id="intake-color" placeholder="Jet Black, Chalk White..." 
+                class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white text-xs focus:outline-none focus:border-white transition">
+            </div>
+          </div>
+
+          <!-- SIZE SELECTOR (User emphasized: "the size i need to mention") -->
+          <div class="p-3 bg-pitch rounded-2xl border border-zinc-800">
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="font-extrabold text-white uppercase text-[11px] tracking-wider flex items-center gap-1.5">
+                <i class="fa-solid fa-ruler"></i>
+                <span>Select Garment Size *</span>
+              </label>
+              <span id="intake-active-size-label" class="text-[11px] font-mono font-bold text-white bg-zinc-900 border border-zinc-700 px-2 py-0.5 rounded">M</span>
+            </div>
+            <p class="text-[10px] text-zinc-500 mb-2">Tap a size pill or enter custom measurement. SKU auto-updates with size tag.</p>
+            
+            <!-- Quick Size Pill Buttons -->
+            <div class="flex flex-wrap gap-1.5" id="intake-size-pills">
+              <button type="button" onclick="selectIntakeSize('XS')" class="size-pill-btn px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">XS</button>
+              <button type="button" onclick="selectIntakeSize('S')" class="size-pill-btn px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">S</button>
+              <button type="button" onclick="selectIntakeSize('M')" class="size-pill-btn px-2.5 py-1 rounded-lg border border-white bg-white text-black text-xs font-extrabold hover:bg-zinc-200 transition">M</button>
+              <button type="button" onclick="selectIntakeSize('L')" class="size-pill-btn px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">L</button>
+              <button type="button" onclick="selectIntakeSize('XL')" class="size-pill-btn px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">XL</button>
+              <button type="button" onclick="selectIntakeSize('XXL')" class="size-pill-btn px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">XXL</button>
+              <button type="button" onclick="selectIntakeSize('Free Size')" class="size-pill-btn px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">Free Size</button>
+              <button type="button" onclick="selectIntakeSize('28')" class="size-pill-btn px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">28</button>
+              <button type="button" onclick="selectIntakeSize('30')" class="size-pill-btn px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">30</button>
+              <button type="button" onclick="selectIntakeSize('32')" class="size-pill-btn px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">32</button>
+              <button type="button" onclick="selectIntakeSize('34')" class="size-pill-btn px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">34</button>
+              <button type="button" onclick="selectIntakeSize('36')" class="size-pill-btn px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">36</button>
+              <button type="button" onclick="selectIntakeSize('38')" class="size-pill-btn px-2.5 py-1 rounded-lg border border-zinc-800 bg-zinc-900 text-zinc-300 text-xs font-bold hover:border-zinc-500 transition">38</button>
+            </div>
+
+            <!-- Custom Size Text Input -->
+            <div class="mt-2 pt-2 border-t border-zinc-850 flex items-center gap-2">
+              <span class="text-[10px] text-zinc-500">Other / Custom:</span>
+              <input type="text" id="intake-custom-size" placeholder="e.g. 40, Oversized L, 3XL..." 
+                class="flex-1 bg-black border border-zinc-800 rounded-lg px-2.5 py-1 text-white text-xs font-mono focus:outline-none focus:border-white"
+                oninput="handleCustomSizeInput(this.value)">
+            </div>
+          </div>
+
+          <!-- PRICING & STOCK CONTROLS (High-contrast emerald highlight) -->
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label class="block font-bold text-zinc-400 mb-1">Selling Price (MRP) *</label>
+              <div class="relative">
+                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-emerald-400 font-bold font-mono"><span class="currency-symbol">₹</span></span>
+                <input type="number" id="intake-selling-price" placeholder="1499" 
+                  class="w-full bg-pitch border border-zinc-800 rounded-xl pl-7 pr-2.5 py-2 text-white font-mono font-extrabold text-emerald-400 focus:outline-none focus:border-emerald-400 transition">
+              </div>
+            </div>
+            <div>
+              <label class="block font-bold text-zinc-400 mb-1">Cost Price (Wholesale)</label>
+              <div class="relative">
+                <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-zinc-500 font-mono"><span class="currency-symbol">₹</span></span>
+                <input type="number" id="intake-cost-price" placeholder="600" 
+                  class="w-full bg-pitch border border-zinc-800 rounded-xl pl-7 pr-2.5 py-2 text-zinc-300 font-mono focus:outline-none focus:border-white transition">
+              </div>
+            </div>
+            <div>
+              <label class="block font-bold text-zinc-400 mb-1">Initial Stock Count *</label>
+              <input type="number" id="intake-stock" value="10" min="0" 
+                class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white font-mono font-bold focus:outline-none focus:border-white transition">
+            </div>
+          </div>
+
+          <!-- SKU & Barcode -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-zinc-400 mb-1">System SKU *</label>
+              <input type="text" id="intake-sku" placeholder="SOL-TSH-001-M" 
+                class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-white">
+            </div>
+            <div>
+              <label class="block font-bold text-zinc-400 mb-1">Barcode / Tag QR</label>
+              <input type="text" id="intake-barcode" placeholder="890123456789" 
+                class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white font-mono text-xs focus:outline-none focus:border-white">
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+
+      <!-- Modal Footer Action Buttons -->
+      <div class="pt-3 border-t border-zinc-850 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2.5">
+        <button type="button" onclick="closeSmartPhotoIntakeModal()" class="py-2.5 px-4 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold text-xs transition">
+          Cancel
+        </button>
+
+        <div class="flex items-center gap-2">
+          <!-- Multi-size shortcut: save M, then immediately save L for same garment without re-uploading -->
+          <button type="button" onclick="savePhotoIntakeProduct(true)" class="py-2.5 px-3.5 rounded-xl bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 text-white font-bold text-xs flex items-center gap-1.5 transition" title="Save this size and keep photo to add another size">
+            <i class="fa-solid fa-plus text-xs"></i>
+            <span>Save & Add Another Size</span>
+          </button>
+          <button type="button" onclick="savePhotoIntakeProduct(false)" class="py-2.5 px-5 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs flex items-center gap-1.5 transition shadow">
+            <i class="fa-solid fa-check"></i>
+            <span>Save Garment to Stock</span>
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- 4.6 FULL-RES IMAGE LIGHTBOX MODAL -->
+  <div id="modal-image-preview" class="fixed inset-0 bg-black/95 backdrop-blur-md z-50 hidden flex items-center justify-center p-4" onclick="closeImagePreviewModal()">
+    <div class="relative max-w-xl w-full flex flex-col items-center" onclick="event.stopPropagation()">
+      <div class="w-full flex items-center justify-between mb-2 text-white">
+        <div>
+          <h4 id="preview-image-title" class="text-xs font-extrabold uppercase tracking-wider">Garment Photo</h4>
+          <span id="preview-image-subtitle" class="text-[10px] text-zinc-400 font-mono">SOL • Soul of Lifestyle</span>
+        </div>
+        <button onclick="closeImagePreviewModal()" class="text-zinc-400 hover:text-white p-1">
+          <i class="fa-solid fa-xmark text-xl"></i>
+        </button>
+      </div>
+
+      <div class="w-full aspect-square max-h-[70vh] bg-black rounded-3xl border border-zinc-800 overflow-hidden flex items-center justify-center shadow-2xl">
+        <img id="preview-modal-img" src="" alt="Garment photo" class="w-full h-full object-contain">
+      </div>
+    </div>
+  </div>
+
+  <!-- 5. NEW PRODUCT MODAL (Manual & Edit) -->
+  <div id="modal-product" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-card rounded-3xl border border-zinc-800 max-w-lg w-full p-5 shadow-2xl relative max-h-[92vh] overflow-y-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h3 id="modal-product-title" class="text-xs font-extrabold uppercase tracking-wider text-white">Add New Garment Style</h3>
+        <button onclick="closeProductModal()" class="text-zinc-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <input type="hidden" id="prod-edit-id">
+      <input type="hidden" id="prod-image-url">
+
+      <!-- Garment Photo in Manual Modal -->
+      <div class="flex items-center gap-3 p-3 bg-pitch rounded-2xl border border-zinc-800 mb-3">
+        <div id="prod-image-preview-box" class="w-16 h-16 rounded-xl bg-black border border-zinc-750 overflow-hidden flex items-center justify-center flex-shrink-0 cursor-pointer" onclick="document.getElementById('prod-manual-file-input').click()">
+          <img id="prod-manual-preview-img" src="" class="w-full h-full object-cover hidden">
+          <i id="prod-manual-placeholder-icon" class="fa-solid fa-camera text-zinc-500 text-lg"></i>
+        </div>
+        <div class="flex-1">
+          <span class="text-xs font-bold text-white block">Garment Photo</span>
+          <span class="text-[10px] text-zinc-400 block">Attach style photo for POS visual grid & stock</span>
+          <div class="flex items-center gap-2 mt-1.5">
+            <input type="file" id="prod-manual-file-input" accept="image/*" class="hidden" onchange="handleManualProductPhoto(this.files[0])">
+            <button type="button" onclick="document.getElementById('prod-manual-file-input').click()" class="px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-700 hover:bg-zinc-800 text-white text-[11px] font-bold transition">
+              <i class="fa-solid fa-arrow-up-from-bracket mr-1"></i> Upload Photo
+            </button>
+            <button type="button" id="prod-manual-clear-photo-btn" onclick="clearManualProductPhoto()" class="px-2 py-1 rounded-lg text-zinc-500 hover:text-red-400 text-[11px] hidden">
+              Remove
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-zinc-400 mb-1">Style Name *</label>
+          <input type="text" id="prod-name" placeholder="e.g. Oversized Heavyweight Cotton Tee" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">SKU *</label>
+            <input type="text" id="prod-sku" placeholder="SOL-TEE-001" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-white">
+          </div>
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Barcode / QR Value</label>
+            <input type="text" id="prod-barcode" placeholder="8901234001" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-white">
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Category</label>
+            <input type="text" id="prod-category" placeholder="T-Shirts, Denim..." class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white">
+          </div>
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Size</label>
+            <input type="text" id="prod-size" placeholder="S, M, L, XL, 32..." class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white">
+          </div>
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Color</label>
+            <input type="text" id="prod-color" placeholder="Jet Black, Chalk White..." class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white">
+          </div>
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Brand / Label</label>
+            <input type="text" id="prod-brand" placeholder="SOL" value="SOL" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white">
+          </div>
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Stock Quantity *</label>
+            <input type="number" id="prod-stock" value="10" min="0" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-white">
+          </div>
+        </div>
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Cost Price (<span class="currency-symbol">₹</span>)</label>
+            <input type="number" id="prod-cost" placeholder="0" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-zinc-400 font-mono focus:outline-none focus:border-white">
+          </div>
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Selling Price (MRP) *</label>
+            <input type="number" id="prod-selling" placeholder="0" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white font-bold font-mono focus:outline-none focus:border-white">
+          </div>
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Low Stock Limit</label>
+            <input type="number" id="prod-low-limit" value="5" min="1" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-white">
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-5 flex gap-2">
+        <button onclick="closeProductModal()" class="flex-1 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold text-xs transition">
+          Cancel
+        </button>
+        <button onclick="saveProduct()" class="flex-1 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs transition">
+          Save Garment
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 6. NEW CUSTOMER MODAL -->
+  <div id="modal-customer" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-card rounded-3xl border border-zinc-800 max-w-md w-full p-5 shadow-2xl relative">
+      <div class="flex items-center justify-between mb-4">
+        <h3 class="text-xs font-extrabold uppercase tracking-wider text-white">Add Customer to CRM</h3>
+        <button onclick="closeNewCustomerModal()" class="text-zinc-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-zinc-400 mb-1">Customer Name *</label>
+          <input type="text" id="cust-modal-name" placeholder="Full name..." class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white">
+        </div>
+        <div>
+          <label class="block font-bold text-zinc-400 mb-1">Phone Number *</label>
+          <input type="text" id="cust-modal-phone" placeholder="+91 98765 43210" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white font-mono focus:outline-none focus:border-white">
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">Email</label>
+            <input type="email" id="cust-modal-email" placeholder="customer@gmail.com" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white">
+          </div>
+          <div>
+            <label class="block font-bold text-zinc-400 mb-1">City / Locality</label>
+            <input type="text" id="cust-modal-city" placeholder="Mumbai, Delhi..." class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white">
+          </div>
+        </div>
+        <div>
+          <label class="block font-bold text-zinc-400 mb-1">Preferences & Notes</label>
+          <textarea id="cust-modal-notes" rows="2" placeholder="e.g. Size L slim fit, prefers monochrome and minimalist shirts" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white"></textarea>
+        </div>
+      </div>
+
+      <div class="mt-5 flex gap-2">
+        <button onclick="closeNewCustomerModal()" class="flex-1 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold text-xs transition">
+          Cancel
+        </button>
+        <button onclick="saveNewCustomer()" class="flex-1 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs transition">
+          Save Customer
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. CUSTOMER PURCHASE HISTORY MODAL -->
+  <div id="modal-customer-history" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-card rounded-3xl border border-zinc-800 max-w-2xl w-full p-5 shadow-2xl relative max-h-[90vh] flex flex-col">
+      <div class="flex items-center justify-between pb-3 border-b border-zinc-850">
+        <div>
+          <h3 id="history-cust-name" class="text-sm font-extrabold text-white">Customer History</h3>
+          <span id="history-cust-phone" class="text-xs font-mono text-zinc-400">+91 00000 00000</span>
+        </div>
+        <button onclick="closeCustomerHistoryModal()" class="text-zinc-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+
+      <div class="grid grid-cols-3 gap-3 my-3">
+        <div class="bg-pitch p-2.5 rounded-xl border border-zinc-850 text-center">
+          <span class="text-[9px] uppercase font-bold text-zinc-400 block">Total Lifetime Spend</span>
+          <span class="text-sm font-extrabold text-white font-mono"><span class="currency-symbol">₹</span><span id="history-total-spent">0</span></span>
+        </div>
+        <div class="bg-pitch p-2.5 rounded-xl border border-zinc-850 text-center">
+          <span class="text-[9px] uppercase font-bold text-zinc-400 block">Loyalty Tier</span>
+          <span id="history-tier" class="text-xs font-extrabold uppercase text-white">Gold</span>
+        </div>
+        <div class="bg-pitch p-2.5 rounded-xl border border-zinc-850 text-center">
+          <span class="text-[9px] uppercase font-bold text-zinc-400 block">Orders Count</span>
+          <span id="history-orders" class="text-sm font-extrabold text-white font-mono">0</span>
+        </div>
+      </div>
+
+      <div class="flex-1 overflow-y-auto space-y-3 p-1" id="history-invoices-list">
+        <!-- Rendered history invoices -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 8. QUICK RESTOCK MODAL -->
+  <div id="modal-restock" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
+    <div class="bg-card rounded-3xl border border-zinc-800 max-w-sm w-full p-5 shadow-2xl relative">
+      <div class="flex items-center justify-between mb-3">
+        <h3 class="text-xs font-extrabold uppercase tracking-wider text-white">Restock Garment</h3>
+        <button onclick="closeRestockModal()" class="text-zinc-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <input type="hidden" id="restock-prod-id">
+      <p id="restock-prod-title" class="text-xs text-white font-bold mb-3"></p>
+
+      <div class="space-y-3 text-xs">
+        <div>
+          <label class="block font-bold text-zinc-400 mb-1">Add Stock (+ Units)</label>
+          <input type="number" id="restock-qty" value="10" min="1" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white font-mono font-bold focus:outline-none focus:border-white">
+        </div>
+        <div>
+          <label class="block font-bold text-zinc-400 mb-1">Reason / Note</label>
+          <input type="text" id="restock-note" placeholder="New shipment received" class="w-full bg-pitch border border-zinc-800 rounded-xl px-3 py-2 text-white focus:outline-none focus:border-white">
+        </div>
+      </div>
+
+      <div class="mt-5 flex gap-2">
+        <button onclick="closeRestockModal()" class="flex-1 py-2.5 rounded-xl bg-zinc-900 hover:bg-zinc-800 text-zinc-300 font-bold text-xs transition">
+          Cancel
+        </button>
+        <button onclick="submitStockAdjustment()" class="flex-1 py-2.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-extrabold text-xs transition">
+          Confirm Restock
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="/static/app.js"></script>
+</body>
+</html>
