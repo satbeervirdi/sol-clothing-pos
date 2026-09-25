@@ -68,11 +68,59 @@ function registerPWA() {
   }
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/static/sw.js').then((reg) => {
+      // Check for updates on every launch
       reg.update();
+
+      // Listen for background updates
+      reg.addEventListener('updatefound', () => {
+        const newWorker = reg.installing;
+        if (newWorker) {
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              console.log('New version of SOL POS available.');
+            }
+          });
+        }
+      });
     }).catch(err => {
       console.log('SW registration note:', err);
     });
+
+    // When the service worker updates and takes control, refresh seamlessly
+    let refreshing = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (!refreshing) {
+        refreshing = true;
+        window.location.reload();
+      }
+    });
+
+    // Check for updates whenever user switches back to the app from background
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        navigator.serviceWorker.ready.then(reg => reg.update()).catch(() => {});
+      }
+    });
   }
+}
+
+async function forceAppUpdate() {
+  showToast('Refreshing app to latest version...', 'info');
+  if ('caches' in window) {
+    try {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    } catch (e) {}
+  }
+  if ('serviceWorker' in navigator) {
+    try {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg) await reg.update();
+    } catch (e) {}
+  }
+  setTimeout(() => {
+    window.location.reload(true);
+  }, 400);
 }
 
 function populateMobileIp() {
