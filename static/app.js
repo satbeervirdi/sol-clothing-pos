@@ -1553,6 +1553,7 @@ async function executeCheckoutTransaction(customerOverride = null) {
     loadProducts();
     loadCustomers();
     loadSoldProductsModal();
+    loadInventory();
 
   } catch (err) {
     alert('Billing Error: ' + err.message);
@@ -2121,6 +2122,18 @@ function renderInventoryTable(products) {
   const tbody = document.getElementById('inventory-table-body');
   tbody.innerHTML = '';
 
+  if (!products || products.length === 0) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="9" class="py-12 text-center text-zinc-500">
+          <i class="fa-solid fa-box-open text-3xl mb-3 block text-zinc-600"></i>
+          <span class="text-sm font-medium">No products found</span>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
   products.forEach(p => {
     const tr = document.createElement('tr');
     tr.className = 'luxury-row text-xs border-b border-zinc-850 transition';
@@ -2213,15 +2226,15 @@ function openProductModal(prod = null) {
     document.getElementById('modal-product-title').textContent = 'Add New Style';
     document.getElementById('prod-edit-id').value = '';
     document.getElementById('prod-name').value = '';
-    document.getElementById('prod-sku').value = 'SOL-' + Math.floor(1000 + Math.random() * 9000);
-    document.getElementById('prod-barcode').value = '890' + Math.floor(1000000 + Math.random() * 9000000);
+    document.getElementById('prod-sku').value = '';
+    document.getElementById('prod-barcode').value = '';
     document.getElementById('prod-category').value = 'Shirts';
     document.getElementById('prod-size').value = 'M';
-    document.getElementById('prod-color').value = 'Jet Black';
+    document.getElementById('prod-color').value = '';
     document.getElementById('prod-brand').value = 'SOL';
-    document.getElementById('prod-stock').value = '10';
-    document.getElementById('prod-cost').value = '600';
-    document.getElementById('prod-selling').value = '1499';
+    document.getElementById('prod-stock').value = '0';
+    document.getElementById('prod-cost').value = '';
+    document.getElementById('prod-selling').value = '';
     document.getElementById('prod-low-limit').value = '5';
     clearManualProductPhoto();
   }
@@ -2294,7 +2307,7 @@ async function saveProduct() {
   }
 
   try {
-    const url = editId ? `/api/products/${editId}` : `/api/products`;
+    const url = editId ? `/api/variants/${editId}` : `/api/products`;
     const method = editId ? 'PUT' : 'POST';
 
     const res = await fetch(url, {
@@ -2327,7 +2340,7 @@ state.intakeBaseSku = '';
 
 function openSmartPhotoIntakeModal() {
   state.intakeSelectedSize = 'M';
-  state.intakeBaseSku = 'SOL-' + Math.floor(1000 + Math.random() * 9000);
+  state.intakeBaseSku = '';
   
   // Reset form fields
   document.getElementById('intake-image-url').value = '';
@@ -2335,11 +2348,11 @@ function openSmartPhotoIntakeModal() {
   document.getElementById('intake-category').value = 'T-Shirts';
   document.getElementById('intake-color').value = '';
   document.getElementById('intake-custom-size').value = '';
-  document.getElementById('intake-selling-price').value = '1499';
-  document.getElementById('intake-cost-price').value = '600';
-  document.getElementById('intake-stock').value = '10';
-  document.getElementById('intake-sku').value = `${state.intakeBaseSku}-M`;
-  document.getElementById('intake-barcode').value = '890' + Math.floor(1000000 + Math.random() * 9000000);
+  document.getElementById('intake-selling-price').value = '';
+  document.getElementById('intake-cost-price').value = '';
+  document.getElementById('intake-stock').value = '0';
+  document.getElementById('intake-sku').value = '';
+  document.getElementById('intake-barcode').value = '';
 
   // Reset visual cards
   document.getElementById('photo-intake-preview-img').src = '';
@@ -2439,8 +2452,10 @@ async function handlePhotoIntakeFile(file) {
         }
 
         // Set base SKU
-        state.intakeBaseSku = data.sku_suggestion || ('SOL-' + Math.floor(1000 + Math.random() * 9000));
-        document.getElementById('intake-sku').value = `${state.intakeBaseSku}-${state.intakeSelectedSize}`;
+        state.intakeBaseSku = data.sku_suggestion || '';
+        if (state.intakeBaseSku) {
+          document.getElementById('intake-sku').value = `${state.intakeBaseSku}-${state.intakeSelectedSize}`;
+        }
         
         if (data.barcode_suggestion) {
           document.getElementById('intake-barcode').value = data.barcode_suggestion;
@@ -2495,9 +2510,7 @@ function handleCustomSizeInput(val) {
 }
 
 function updateIntakeSku() {
-  if (!state.intakeBaseSku) {
-    state.intakeBaseSku = 'SOL-' + Math.floor(1000 + Math.random() * 9000);
-  }
+  if (!state.intakeBaseSku) return;
   const sizeCode = (state.intakeSelectedSize || 'FS').replace(/\s+/g, '');
   document.getElementById('intake-sku').value = `${state.intakeBaseSku}-${sizeCode}`;
 }
@@ -2563,8 +2576,8 @@ async function savePhotoIntakeProduct(addAnotherSize = false) {
         const nextSize = (currentIdx !== -1 && currentIdx < sizeOrder.length - 1) ? sizeOrder[currentIdx + 1] : 'L';
         
         selectIntakeSize(nextSize);
-        // Refresh barcode for new size
-        document.getElementById('intake-barcode').value = '890' + Math.floor(1000000 + Math.random() * 9000000);
+        // Clear barcode for new size so operator can scan or enter
+        document.getElementById('intake-barcode').value = '';
         
         // Brief alert / confirmation
         alert(`Saved ${size} (${sku}) to inventory! Now enter stock & details for size ${nextSize}.`);
@@ -2595,10 +2608,13 @@ function closeImagePreviewModal() {
 async function deleteProduct(id) {
   if (confirm('Delete this style from inventory?')) {
     try {
-      const res = await fetch(`/api/products/${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/variants/${id}`, { method: 'DELETE' });
       if (res.ok) {
         await loadProducts();
         loadInventory();
+      } else {
+        const err = await res.json();
+        alert('Error deleting: ' + (err.detail || 'Failed'));
       }
     } catch (e) {
       alert(e.message);
@@ -2629,12 +2645,12 @@ async function submitStockAdjustment() {
   }
 
   try {
-    const res = await fetch(`/api/products/${prodId}/adjust-stock`, {
+    const res = await fetch(`/api/variants/${prodId}/adjust-stock`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         quantity_change: qty,
-        reason: 'restock',
+        reason: 'RESTOCK',
         note: note
       })
     });
@@ -2643,6 +2659,9 @@ async function submitStockAdjustment() {
       playBeep(800, 0.08);
       await loadProducts();
       loadInventory();
+    } else {
+      const err = await res.json();
+      alert('Restock failed: ' + (err.detail || 'Failed'));
     }
   } catch (err) {
     alert('Restock failed: ' + err.message);
@@ -2671,6 +2690,16 @@ async function loadCRM() {
 function renderCustomerCards(customers) {
   const grid = document.getElementById('crm-customers-grid');
   grid.innerHTML = '';
+
+  if (!customers || customers.length === 0) {
+    grid.innerHTML = `
+      <div class="col-span-full py-12 text-center text-zinc-500">
+        <i class="fa-solid fa-users text-3xl mb-3 block text-zinc-600"></i>
+        <span class="text-sm font-medium">No customers found</span>
+      </div>
+    `;
+    return;
+  }
 
   customers.forEach(c => {
     const card = document.createElement('div');
@@ -2958,6 +2987,18 @@ async function loadRecentInvoices() {
       const tbody = document.getElementById('recent-invoices-body');
       tbody.innerHTML = '';
 
+      if (!invoices || invoices.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="7" class="py-8 text-center text-zinc-500">
+              <i class="fa-solid fa-receipt text-2xl mb-2 block text-zinc-600"></i>
+              <span class="text-xs font-medium">No invoices recorded yet</span>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
       invoices.forEach(inv => {
         const tr = document.createElement('tr');
         tr.className = 'luxury-row text-xs border-b border-zinc-850 transition';
@@ -3054,13 +3095,13 @@ function resetTagStudioToBlank() {
   const sel = document.getElementById('tag-studio-select-product');
   if (sel) sel.value = '';
   state.tagStudio.selectedProductId = '';
-  document.getElementById('tag-studio-name').value = 'SOL Signature Heavyweight Tee';
-  document.getElementById('tag-studio-category').value = 'T-Shirts';
-  document.getElementById('tag-studio-price').value = '1499';
-  document.getElementById('tag-studio-color').value = 'Jet Black';
+  document.getElementById('tag-studio-name').value = '';
+  document.getElementById('tag-studio-category').value = '';
+  document.getElementById('tag-studio-price').value = '';
+  document.getElementById('tag-studio-color').value = '';
   document.getElementById('tag-studio-copies').value = '1';
   document.getElementById('tag-studio-custom-size').value = '';
-  generateNewTagSku();
+  document.getElementById('tag-studio-sku').value = '';
   selectTagStudioSize('M');
 }
 
@@ -3103,10 +3144,7 @@ function updateTagStudioSkuForSize(size) {
   const input = document.getElementById('tag-studio-sku');
   if (!input) return;
   let current = input.value.trim();
-  if (!current) {
-    input.value = `SOL-ITEM-${Math.floor(1000 + Math.random() * 9000)}-${size}`;
-    return;
-  }
+  if (!current) return;
   // Replace trailing -SIZE if already present
   const sizePattern = /-(XS|S|M|L|XL|XXL|3XL|28|30|32|34|36|38|FS)$/i;
   if (sizePattern.test(current)) {
@@ -3115,11 +3153,11 @@ function updateTagStudioSkuForSize(size) {
 }
 
 function generateNewTagSku() {
-  const cat = document.getElementById('tag-studio-category').value.trim() || 'TS';
-  const prefix = cat.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, '') || 'SOL';
+  const cat = document.getElementById('tag-studio-category').value.trim() || 'GEN';
+  const prefix = cat.substring(0, 3).toUpperCase().replace(/[^A-Z]/g, '') || 'GEN';
   const size = state.tagStudio.selectedSize || 'M';
-  const rand = Math.floor(1000 + Math.random() * 9000);
-  const newSku = `SOL-${prefix}-${rand}-${size}`;
+  const seq = Date.now().toString().slice(-4);
+  const newSku = `SOL-${prefix}-${seq}-${size}`;
   document.getElementById('tag-studio-sku').value = newSku;
   updateLiveTagPreview();
 }
@@ -3371,13 +3409,13 @@ async function saveTagAsNewProduct() {
   const payload = {
     name,
     sku,
-    barcode: sku.replace(/[^0-9]/g, '') || ('890' + Math.floor(1000000 + Math.random() * 9000000)),
+    barcode: null,
     category,
     size,
     color,
     brand: 'SOL',
-    stock_quantity: 10,
-    cost_price: Math.round(price * 0.4),
+    stock_quantity: 0,
+    cost_price: 0,
     selling_price: price,
     low_stock_threshold: 5
   };
