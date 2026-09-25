@@ -1,11 +1,15 @@
 // Service Worker for SOL POS PWA
-const CACHE_NAME = 'sol-pos-cache-v1';
+const CACHE_NAME = 'sol-pos-cache-v2';
 const ASSETS = [
   '/',
   '/static/style.css',
   '/static/app.js',
   '/static/manifest.json',
-  '/static/sol_logo.jpg'
+  '/static/sol_logo.svg',
+  '/static/sol_logo.png',
+  '/static/icon-192.png',
+  '/static/icon-512.png',
+  '/static/og-banner.png'
 ];
 
 self.addEventListener('install', (e) => {
