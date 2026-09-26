@@ -58,9 +58,9 @@ python3 run.py
 - **📲 One-Click WhatsApp E-Receipt:**
   - Automatically formats an itemized receipt message and opens WhatsApp with one tap:
     ```text
-    🛍️ Thank you for shopping at Vogue & Stitch Apparel!
-    📄 Invoice: INV-2026-0005
-    👤 Customer: Aarav Sharma
+    🛍️ Thank you for shopping at SOL • Soul of Lifestyle!
+    📄 Invoice: SOL-2026-000001
+    👤 Customer: Walk-in Guest / Satbeer Singh
     ----------------------------------
     1. Classic Oxford Cotton Shirt (M) x 2 = ₹2,798.00
     2. Express Tailoring & Fitting (Custom) x 1 = ₹450.00
@@ -102,7 +102,7 @@ Located at `/Users/macbookair/second-brain/clothing-pos-crm/clothing_pos.db`:
 
 1. Open **[http://localhost:8000](http://localhost:8000)** in your browser.
 2. In the **Billing** tab:
-   - Type `98201` in Customer search and select **Aarav Sharma (Gold Tier)**.
+   - Type phone number in Customer search or select **Satbeer Singh**.
    - Click **"Apply 10%"** to apply his VIP discount.
    - Enter `SHIRT-OXF-WHT-M` in the barcode input or click an item from the **Pick Grid**.
    - Notice the item appears in the bill. Click on its price or name to customize it on the fly!

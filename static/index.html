@@ -174,7 +174,7 @@
               <div class="flex items-center gap-2">
                 <div class="relative flex-1">
                   <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
-                  <input type="text" id="billing-customer-search" placeholder="Customer Mobile (e.g. 98201) or Name..." 
+                  <input type="text" id="billing-customer-search" placeholder="Customer Mobile (e.g. 98765) or Name..." 
                     class="w-full bg-pitch border border-zinc-800 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-white transition"
                     autocomplete="off" oninput="handleCustomerSearchInput(this.value)">
                   <button id="clear-cust-btn" onclick="clearSelectedCustomer()" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white text-xs">
@@ -343,7 +343,7 @@
               <div class="w-full max-w-sm bg-pitch border border-zinc-800 rounded-2xl p-3.5 my-3 text-xs text-left grid grid-cols-2 gap-2.5">
                 <div>
                   <span class="text-[9px] text-zinc-500 uppercase font-bold tracking-wider block">Invoice</span>
-                  <span id="success-inv-number" class="font-mono font-bold text-white text-xs">SOL-2026-000124</span>
+                  <span id="success-inv-number" class="font-mono font-bold text-white text-xs">-</span>
                 </div>
                 <div>
                   <span class="text-[9px] text-zinc-500 uppercase font-bold tracking-wider block">Payment</span>
@@ -1465,7 +1465,7 @@
           </div>
           <div>
             <h3 class="text-xs font-extrabold uppercase tracking-wider text-white">Bill Generated Successfully</h3>
-            <span id="modal-inv-id" class="text-xs font-mono text-zinc-400 font-bold">INV-2026-0005</span>
+            <span id="modal-inv-id" class="text-xs font-mono text-zinc-400 font-bold">-</span>
           </div>
         </div>
         <button onclick="closeInvoiceSuccessModal()" class="text-zinc-400 hover:text-white">
@@ -1535,14 +1535,14 @@
           </label>
           <div class="relative">
             <i class="fa-solid fa-phone absolute left-3.5 top-1/2 -translate-y-1/2 text-zinc-500 text-xs"></i>
-            <input type="tel" id="prompt-cust-phone" placeholder="Enter 10-digit mobile number (e.g. 98201 12345)..." 
+            <input type="tel" id="prompt-cust-phone" placeholder="Enter 10-digit mobile number (e.g. 98765 43210)..." 
               class="w-full bg-pitch border border-zinc-700 focus:border-white rounded-xl pl-9 pr-3 py-2.5 text-sm text-white placeholder-zinc-500 font-mono focus:outline-none transition"
               oninput="handlePromptPhoneInput(this.value)">
           </div>
           <!-- Auto-matched customer pill -->
           <div id="prompt-matched-customer-pill" class="hidden mt-2 p-2 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-between text-xs">
             <div class="flex items-center gap-2">
-              <span id="prompt-matched-name" class="font-bold text-white">Aarav Sharma</span>
+              <span id="prompt-matched-name" class="font-bold text-white">Customer Name</span>
               <span id="prompt-matched-tier" class="text-[9px] uppercase font-bold bg-zinc-800 px-1.5 py-0.5 rounded text-emerald-400 border border-emerald-900">GOLD VIP</span>
             </div>
             <span class="text-[10px] text-zinc-400 font-mono">Existing Customer</span>

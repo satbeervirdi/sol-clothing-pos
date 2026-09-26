@@ -2894,7 +2894,7 @@ function renderAnalyticsDashboard(data) {
   bestTbody.innerHTML = '';
 
   if (data.best_selling_products.length === 0) {
-    bestTbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-zinc-500">No sales recorded yet.</td></tr>`;
+    bestTbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-zinc-500">No sales data yet.</td></tr>`;
   } else {
     data.best_selling_products.forEach((prod, index) => {
       const tr = document.createElement('tr');
@@ -2915,7 +2915,7 @@ function renderAnalyticsDashboard(data) {
         </td>
         <td class="py-3 px-3 text-zinc-400">${prod.category || 'General'}</td>
         <td class="py-3 px-3 text-center">
-          <span class="font-mono font-bold text-white text-xs bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded">
+          <span class="font-mono font-bold text-white text-xs bg-zinc-900 border border-zinc-850 px-2 py-0.5 rounded">
             ${prod.units_sold} sold
           </span>
         </td>
@@ -2935,23 +2935,28 @@ function renderAnalyticsDashboard(data) {
   // Category Breakdown
   const catContainer = document.getElementById('category-share-list');
   catContainer.innerHTML = '';
-  const totalCatSales = data.category_breakdown.reduce((sum, c) => sum + c.total_sales, 0);
 
-  data.category_breakdown.forEach(cat => {
-    const pct = totalCatSales > 0 ? Math.round((cat.total_sales / totalCatSales) * 100) : 0;
-    const catRow = document.createElement('div');
-    catRow.className = 'text-xs space-y-1';
-    catRow.innerHTML = `
-      <div class="flex justify-between font-semibold">
-        <span class="text-zinc-300">${escapeHtml(cat.category)}</span>
-        <span class="font-mono text-emerald-400 font-bold">${state.settings.currency_symbol}${cat.total_sales.toLocaleString()} (${pct}%)</span>
-      </div>
-      <div class="w-full bg-black rounded-full h-1.5 overflow-hidden border border-zinc-900">
-        <div class="bg-white h-1.5 rounded-full" style="width: ${pct}%"></div>
-      </div>
-    `;
-    catContainer.appendChild(catRow);
-  });
+  if (!data.category_breakdown || data.category_breakdown.length === 0) {
+    catContainer.innerHTML = '<p class="text-zinc-500 italic text-xs py-4 text-center">No sales data yet.</p>';
+  } else {
+    const totalCatSales = data.category_breakdown.reduce((sum, c) => sum + c.total_sales, 0);
+
+    data.category_breakdown.forEach(cat => {
+      const pct = totalCatSales > 0 ? Math.round((cat.total_sales / totalCatSales) * 100) : 0;
+      const catRow = document.createElement('div');
+      catRow.className = 'text-xs space-y-1';
+      catRow.innerHTML = `
+        <div class="flex justify-between font-semibold">
+          <span class="text-zinc-300">${escapeHtml(cat.category)}</span>
+          <span class="font-mono text-emerald-400 font-bold">${state.settings.currency_symbol}${cat.total_sales.toLocaleString()} (${pct}%)</span>
+        </div>
+        <div class="w-full bg-black rounded-full h-1.5 overflow-hidden border border-zinc-900">
+          <div class="bg-white h-1.5 rounded-full" style="width: ${pct}%"></div>
+        </div>
+      `;
+      catContainer.appendChild(catRow);
+    });
+  }
 
   // Low Stock Watchlist
   const lowContainer = document.getElementById('low-stock-radar-list');
@@ -2992,7 +2997,7 @@ async function loadRecentInvoices() {
           <tr>
             <td colspan="7" class="py-8 text-center text-zinc-500">
               <i class="fa-solid fa-receipt text-2xl mb-2 block text-zinc-600"></i>
-              <span class="text-xs font-medium">No invoices recorded yet</span>
+              <span class="text-xs font-medium">No sales data yet</span>
             </td>
           </tr>
         `;
@@ -3691,7 +3696,7 @@ function renderSoldItemsTable(query) {
 
   if (filtered.length === 0) {
     if (emptyEl) {
-      emptyEl.textContent = query ? 'No matching sold products found.' : 'No items sold yet.';
+      emptyEl.textContent = query ? 'No matching sold products found.' : 'No sales data yet.';
       emptyEl.classList.remove('hidden');
     }
     return;
@@ -3760,7 +3765,7 @@ function renderSoldRecentInvoices(query) {
 
   if (filtered.length === 0) {
     const tr = document.createElement('tr');
-    tr.innerHTML = `<td colspan="6" class="py-8 text-center text-zinc-500 text-xs">No recent invoices found.</td>`;
+    tr.innerHTML = `<td colspan="6" class="py-8 text-center text-zinc-500 text-xs">${query ? 'No matching invoices found.' : 'No sales data yet.'}</td>`;
     tbody.appendChild(tr);
     return;
   }

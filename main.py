@@ -522,6 +522,15 @@ def list_sales(limit: int = 50, search: Optional[str] = None):
         conn.close()
 
 
+@app.get("/api/sales/sold-products")
+def get_sold_products():
+    conn = get_db()
+    try:
+        return reporting_service.get_sold_products_breakdown(conn)
+    finally:
+        conn.close()
+
+
 @app.get("/api/invoices/{invoice_id}")
 @app.get("/api/sales/{invoice_id}")
 def get_sale(invoice_id: str):
@@ -656,16 +665,7 @@ def send_custom_invoice_email(invoice_id: int, req: EmailRequest):
         conn.close()
 
 
-# ----------------- Sold Products & Analytics API -----------------
-
-@app.get("/api/sales/sold-products")
-def get_sold_products():
-    conn = get_db()
-    try:
-        return reporting_service.get_sold_products_breakdown(conn)
-    finally:
-        conn.close()
-
+# ----------------- Analytics & Dashboard API -----------------
 
 @app.get("/api/analytics/dashboard")
 def get_analytics_dashboard():
