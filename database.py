@@ -26,6 +26,9 @@ def get_db(db_path: str = None) -> sqlite3.Connection:
     Enforces WAL mode, foreign keys, row factory, and busy timeout.
     """
     target = db_path or os.environ.get("SOL_DB_PATH", DB_PATH)
+    parent_dir = os.path.dirname(os.path.abspath(target))
+    if parent_dir and not os.path.exists(parent_dir):
+        os.makedirs(parent_dir, exist_ok=True)
     conn = sqlite3.connect(target, timeout=20.0)
     conn.row_factory = sqlite3.Row
     conn.execute("PRAGMA journal_mode = WAL;")
